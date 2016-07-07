@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
 import static com.poolbets.application.additions.Constants.FONT_CHARS;
 
@@ -16,7 +17,7 @@ import static com.poolbets.application.additions.Constants.FONT_CHARS;
 public class Utils {
 
     public static Color getColorRGB(String color) {
-    return new Color(Color.valueOf(color));
+        return new Color(Color.valueOf(color));
     }
 
     public static void setGLBackgroundColor(float r, float g, float b, float a) {
@@ -55,4 +56,16 @@ public class Utils {
         return font;
     }
 
+    public static TextButton.TextButtonStyle getTextButton
+            (String upTextColor, String downTextColor,
+             BitmapFont font) {
+
+        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(
+                null, null, null, font);
+
+        style.fontColor = Color.valueOf(upTextColor);
+        style.downFontColor = Color.valueOf(downTextColor);
+
+        return style;
+    }
 }
