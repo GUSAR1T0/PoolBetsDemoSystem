@@ -6,8 +6,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import static com.poolbets.application.additions.Constants.FONT_CHARS;
 
@@ -15,6 +18,15 @@ import static com.poolbets.application.additions.Constants.FONT_CHARS;
  * Created by Mashenkin Roman on 07.07.16.
  */
 public class Utils {
+
+    public static class TextureData {
+
+        public TextureRegionDrawable texture1;
+        public TextureRegionDrawable texture2;
+        public Pixmap pixmap1;
+        public Pixmap pixmap2;
+        public ImageTextButton.ImageTextButtonStyle style;
+    }
 
     public static Color getColorRGB(String color) {
         return new Color(Color.valueOf(color));
@@ -35,7 +47,8 @@ public class Utils {
         return pixmap;
     }
 
-    public static BitmapFont getFont(String fontName, String colorBorder, int size) {
+    public static BitmapFont getFont(String fontName, int fontSize,
+                                     String colorBorder, float borderWidth) {
 
         FreeTypeFontGenerator generator =
                 new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/" + fontName));
@@ -43,9 +56,9 @@ public class Utils {
                 new FreeTypeFontGenerator.FreeTypeFontParameter();
 
         parameter.characters = FONT_CHARS;
-        parameter.size = size;
+        parameter.size = fontSize;
         parameter.borderColor = Color.valueOf(colorBorder);
-        parameter.borderWidth = 2;
+        parameter.borderWidth = borderWidth;
         parameter.minFilter = Texture.TextureFilter.Linear;
         parameter.magFilter = Texture.TextureFilter.Linear;
 
@@ -56,16 +69,31 @@ public class Utils {
         return font;
     }
 
-    public static TextButton.TextButtonStyle getTextButton
-            (String upTextColor, String downTextColor,
+    public static TextureData getImageTextButton
+            (int width, int height,
+             String upButtonColor, String downButtonColor,
+             String upTextColor, String downTextColor,
              BitmapFont font) {
 
-        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(
-                null, null, null, font);
+        TextureData temp = new TextureData();
 
-        style.fontColor = Color.valueOf(upTextColor);
-        style.downFontColor = Color.valueOf(downTextColor);
+        temp.pixmap1 = setPixmapColor(width, height, upButtonColor);
+        temp.pixmap2 = setPixmapColor(width, height, downButtonColor);
 
-        return style;
+        TextureRegionDrawable texture1 = new TextureRegionDrawable(new TextureRegion(
+                new Texture(temp.pixmap1)));
+        TextureRegionDrawable texture2 = new TextureRegionDrawable(new TextureRegion(
+                new Texture(temp.pixmap2)));
+
+        temp.texture1 = texture1;
+        temp.texture2 = texture2;
+
+        temp.style = new ImageTextButton.ImageTextButtonStyle(
+                texture1, texture2, texture1, font);
+
+        temp.style.fontColor = Color.valueOf(upTextColor);
+        temp.style.downFontColor = Color.valueOf(downTextColor);
+
+        return temp;
     }
 }

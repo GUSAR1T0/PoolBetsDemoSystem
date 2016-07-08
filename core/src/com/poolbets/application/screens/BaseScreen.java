@@ -8,20 +8,19 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.poolbets.application.PoolBetsApp;
+import com.poolbets.application.additions.Utils;
 
 import static com.poolbets.application.additions.Constants.*;
 import static com.poolbets.application.additions.Utils.getColorRGB;
 import static com.poolbets.application.additions.Utils.getFont;
-import static com.poolbets.application.additions.Utils.getTextButton;
+import static com.poolbets.application.additions.Utils.getImageTextButton;
 import static com.poolbets.application.additions.Utils.setGLBackgroundColor;
 import static com.poolbets.application.additions.Utils.setPixmapColor;
 
@@ -31,33 +30,39 @@ import static com.poolbets.application.additions.Utils.setPixmapColor;
 class BaseScreen implements Screen {
 
     private PoolBetsApp app;
-    private Color backgroundColor;
+    private Color glBackgroundColor;
     private Stage stage;
-    private Pixmap pTableBackground;
-    private TextureRegionDrawable tTableBackground;
-    private BitmapFont fontBrend, fontButton;
-    private Label labelBrend;
-    private TextButton buttonMenu, buttonCash;
+    private Pixmap pHeaderTableBackground;
+    private TextureRegionDrawable tHeaderTableBackground;
+    private BitmapFont fontHeaderBrand, fontHeaderButton;
+
+    private Utils.TextureData buttonHeaderStyle;
 
     BaseScreen(final PoolBetsApp app) {
 
         this.app = app;
 
-        backgroundColor = getColorRGB("#5a545e");
+        glBackgroundColor = getColorRGB("#5a545e");
 
         stage = new Stage(new StretchViewport(WORLD_WIDTH,
                 WORLD_HEIGHT * RATIO));
         Gdx.input.setInputProcessor(stage);
 
-        fontBrend = getFont("BigOrange.otf", "#bdbfc7", 80);
-        fontButton = getFont("BigOrange.otf", "#bdbfc7", 40);
+        fontHeaderBrand = getFont("BigOrange.otf", 80, "#bdbfc7", 2);
+        fontHeaderButton = getFont("BigOrange.otf", 40, "#bdbfc7", 1.75f);
 
-        pTableBackground = setPixmapColor(1, 1, "#938380");
-        tTableBackground =
-                new TextureRegionDrawable(new TextureRegion(new Texture(pTableBackground)));
+        pHeaderTableBackground = setPixmapColor(1, 1, "#938380");
+        tHeaderTableBackground =
+                new TextureRegionDrawable(new TextureRegion(new Texture(pHeaderTableBackground)));
+
+        buttonHeaderStyle = getImageTextButton(
+                1, 1,
+                "#938380", "#b4b1bc",
+                "#f4f5fb", "#f4f5fb",
+                fontHeaderButton
+        );
 
         createInfoTable();
-        createScroll();
     }
 
     private void createInfoTable() {
@@ -65,43 +70,34 @@ class BaseScreen implements Screen {
         Table table = new Table();
         table.setPosition(0, stage.getHeight() * 9 / 10f);
         table.setSize(stage.getWidth(), stage.getHeight() / 10f);
-        table.setBackground(tTableBackground);
+        table.setBackground(tHeaderTableBackground);
 
-        labelBrend = new Label("PoolBets",
-                new Label.LabelStyle(fontBrend, Color.valueOf("#f4f5fb")));
-        labelBrend.setAlignment(Align.center);
+        Label labelHeaderBrand = new Label("PoolBets",
+                new Label.LabelStyle(fontHeaderBrand, Color.valueOf("#f4f5fb")));
+        labelHeaderBrand.setAlignment(Align.center);
 
-        TextButton.TextButtonStyle style = getTextButton("#f4f5fb", "#938380", fontButton);
-        buttonMenu = new TextButton("<<<", style);
-        buttonCash = new TextButton("0\nCUB", style);
+        ImageTextButton buttonMenu = new ImageTextButton("<<<", buttonHeaderStyle.style);
+        ImageTextButton buttonCash = new ImageTextButton("0\nCUB", buttonHeaderStyle.style);
 
-        table.add(buttonMenu).width(stage.getWidth() / 4f).height(stage.getHeight() / 10f).expand();
-        table.add(labelBrend).width(stage.getWidth() / 2f).height(stage.getHeight() / 10f).expand();
-        table.add(buttonCash).width(stage.getWidth() / 4f).height(stage.getHeight() / 10f).expand();
+        table.add(buttonMenu).width(stage.getWidth() / 4f).
+                height(stage.getHeight() / 10f).
+                expand();
+        table.add(labelHeaderBrand).width(stage.getWidth() / 2f).
+                height(stage.getHeight() / 10f).
+                expand();
+        table.add(buttonCash).width(stage.getWidth() / 4f).
+                height(stage.getHeight() / 10f).
+                expand();
 
         stage.addActor(table);
     }
 
-    private void createScroll() {
+    public PoolBetsApp getApp() {
+        return app;
+    }
 
-        Table sections = new Table();
-
-        Array<Label> labels = new Array<Label>();
-
-        for (int i = 0; i < 50; i++) {
-            labels.add(new Label(i + "",
-                    new Label.LabelStyle(fontBrend, Color.valueOf("#f4f5fb"))));
-            labels.get(i).setAlignment(Align.center);
-            sections.add(labels.get(i)).width(stage.getWidth()).height(stage.getHeight() / 10f).row();
-        }
-
-        ScrollPane scrollTable = new ScrollPane(sections);
-        scrollTable.setPosition(0, 0);
-        scrollTable.setWidth(stage.getWidth());
-        scrollTable.setHeight(stage.getHeight() * 9 / 10f);
-        scrollTable.setupOverscroll(300, 500, 500);
-
-        stage.addActor(scrollTable);
+    public Stage getStage() {
+        return stage;
     }
 
     @Override
@@ -113,10 +109,10 @@ class BaseScreen implements Screen {
     public void render(float delta) {
 
         setGLBackgroundColor(
-                backgroundColor.r,
-                backgroundColor.g,
-                backgroundColor.b,
-                backgroundColor.a
+                glBackgroundColor.r,
+                glBackgroundColor.g,
+                glBackgroundColor.b,
+                glBackgroundColor.a
         );
 
         stage.act(delta);
@@ -147,9 +143,13 @@ class BaseScreen implements Screen {
     public void dispose() {
 
         stage.dispose();
-        fontBrend.dispose();
-        fontButton.dispose();
-        pTableBackground.dispose();
-        tTableBackground.getRegion().getTexture().dispose();
+        fontHeaderBrand.dispose();
+        fontHeaderButton.dispose();
+        pHeaderTableBackground.dispose();
+        tHeaderTableBackground.getRegion().getTexture().dispose();
+        buttonHeaderStyle.pixmap1.dispose();
+        buttonHeaderStyle.pixmap2.dispose();
+        buttonHeaderStyle.texture1.getRegion().getTexture().dispose();
+        buttonHeaderStyle.texture2.getRegion().getTexture().dispose();
     }
 }

@@ -9,9 +9,10 @@ public class DesktopLauncher {
 
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.width = Constants.WIDHT;
+		config.width = Constants.WIDTH;
 		config.height = Constants.HEIGHT;
 		config.title = Constants.TITLE;
+		config.resizable = false;
 
 		new LwjglApplication(new PoolBetsApp(), config);
 	}
