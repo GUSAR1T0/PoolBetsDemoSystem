@@ -20,4 +20,8 @@ public class Constants {
    public static final String FONT_CHARS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" +
            "abcdefghijklmnopqrstuvwxyz" + "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ" +
            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789][_!$%#@|\\/?-+=()*&.;:,{}\"´`'<>";
+
+   public static final String ICON_FOR_WINDOWS = "data/icons/icon_for_windows.png";
+   public static final String ICON_FOR_UNIX = "data/icons/icon_for_unix.png";
+   public static final String ICON_FOR_MAC = "data/icons/icon_for_mac.png";
 }

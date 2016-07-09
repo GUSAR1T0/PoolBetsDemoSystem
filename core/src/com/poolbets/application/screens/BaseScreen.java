@@ -42,23 +42,23 @@ class BaseScreen implements Screen {
 
         this.app = app;
 
-        glBackgroundColor = getColorRGB("#5a545e");
+        glBackgroundColor = getColorRGB("#2f2c30");
 
         stage = new Stage(new StretchViewport(WORLD_WIDTH,
                 WORLD_HEIGHT * RATIO));
         Gdx.input.setInputProcessor(stage);
 
-        fontHeaderBrand = getFont("BigOrange.otf", 80, "#bdbfc7", 2);
-        fontHeaderButton = getFont("BigOrange.otf", 40, "#bdbfc7", 1.75f);
+        fontHeaderBrand = getFont("BigOrange.otf", 80, "#bac0ce", 1.75f);
+        fontHeaderButton = getFont("DINProBold.otf", 40, "#bac0ce", 1.5f);
 
-        pHeaderTableBackground = setPixmapColor(1, 1, "#938380");
+        pHeaderTableBackground = setPixmapColor(1, 1, "#61656e");
         tHeaderTableBackground =
                 new TextureRegionDrawable(new TextureRegion(new Texture(pHeaderTableBackground)));
 
         buttonHeaderStyle = getImageTextButton(
                 1, 1,
-                "#938380", "#b4b1bc",
-                "#f4f5fb", "#f4f5fb",
+                "#61656e", "#e9e8e6",
+                "#fbfbf9", "#61656e",
                 fontHeaderButton
         );
 
@@ -73,11 +73,11 @@ class BaseScreen implements Screen {
         table.setBackground(tHeaderTableBackground);
 
         Label labelHeaderBrand = new Label("PoolBets",
-                new Label.LabelStyle(fontHeaderBrand, Color.valueOf("#f4f5fb")));
+                new Label.LabelStyle(fontHeaderBrand, Color.valueOf("#fbfbf9")));
         labelHeaderBrand.setAlignment(Align.center);
 
         ImageTextButton buttonMenu = new ImageTextButton("<<<", buttonHeaderStyle.style);
-        ImageTextButton buttonCash = new ImageTextButton("0\nCUB", buttonHeaderStyle.style);
+        ImageTextButton buttonCash = new ImageTextButton("63794\nCUB", buttonHeaderStyle.style);
 
         table.add(buttonMenu).width(stage.getWidth() / 4f).
                 height(stage.getHeight() / 10f).

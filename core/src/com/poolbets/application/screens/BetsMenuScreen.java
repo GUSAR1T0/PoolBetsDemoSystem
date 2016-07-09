@@ -41,17 +41,17 @@ public class BetsMenuScreen extends BaseScreen {
         this.app = getApp();
         stage = getStage();
 
-        fontMainS = getFont("PFSquareSansPro-Regular.ttf", 30, "#bdbfc7", 1);
-        fontMainB = getFont("PFSquareSansPro-Regular.ttf", 50, "#bdbfc7", 1);
+        fontMainS = getFont("PFSquareSansPro-Regular.ttf", 40, "#bac0ce", 1);
+        fontMainB = getFont("PFSquareSansPro-Regular.ttf", 60, "#bac0ce", 1);
 
-        pLine = setPixmapColor(1, 1, "#938380");
+        pLine = setPixmapColor(1, 1, "#61656e");
         tLine = new Texture(pLine);
         tLine.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         buttonMainStyle = getImageTextButton(
                 1, 1,
-                "#938380", "#b4b1bc",
-                "#f4f5fb", "#f4f5fb",
+                "#61656e", "#e9e8e6",
+                "#fbfbf9", "#61656e",
                 fontMainB
                 );
 
@@ -68,20 +68,25 @@ public class BetsMenuScreen extends BaseScreen {
             Array<Label> labels = new Array<Label>();
 
             labels.add(new Label("Manchester United FC - Manchester City FC",
-                    new Label.LabelStyle(fontMainB, Color.valueOf("#f4f5fb"))));
+                    new Label.LabelStyle(fontMainB, Color.valueOf("#fbfbf9"))));
 
             labels.get(0).setAlignment(Align.center);
             labels.get(0).setWrap(true);
 
-            labels.add(new Label("English Premier League" + ", " + "10.07.2016 19:00",
-                    new Label.LabelStyle(fontMainS, Color.valueOf("#f4f5fb"))));
+            labels.add(new Label(
+                    "English Premier League" + ", " +
+                    "Manchester" + "\n" +
+                    "10.07.2016 19:00",
+                    new Label.LabelStyle(fontMainS, Color.valueOf("#fbfbf9"))));
+            
+            labels.get(1).setAlignment(Align.center);
 
             labels.add(new Label("1",
-                    new Label.LabelStyle(fontMainS, Color.valueOf("#f4f5fb"))));
+                    new Label.LabelStyle(fontMainS, Color.valueOf("#fbfbf9"))));
             labels.add(new Label("X",
-                    new Label.LabelStyle(fontMainS, Color.valueOf("#f4f5fb"))));
+                    new Label.LabelStyle(fontMainS, Color.valueOf("#fbfbf9"))));
             labels.add(new Label("2",
-                    new Label.LabelStyle(fontMainS, Color.valueOf("#f4f5fb"))));
+                    new Label.LabelStyle(fontMainS, Color.valueOf("#fbfbf9"))));
 
             Array<ImageTextButton> buttons = new Array<ImageTextButton>();
 
@@ -129,7 +134,7 @@ public class BetsMenuScreen extends BaseScreen {
             Table tableBetInfo = new Table();
 
             tableBetInfo.add(buttonMoreAboutBet).height(stage.getHeight() / 6f).
-                    colspan(3).row();
+                    colspan(3).expandY().row();
             tableBetInfo.add(labels.get(2));
             tableBetInfo.add(labels.get(3));
             tableBetInfo.add(labels.get(4)).row();
@@ -148,7 +153,7 @@ public class BetsMenuScreen extends BaseScreen {
                 Image line = new Image(tLine);
 
                 tableBetInfo.add(line).width(stage.getWidth() * 7 / 8f).
-                        height(4).colspan(3).expand();
+                        height(4).colspan(3);
             }
 
             sections.add(tableBetInfo).width(stage.getWidth()).
