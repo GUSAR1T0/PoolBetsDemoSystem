@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
@@ -16,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.poolbets.application.PoolBetsApp;
-import com.poolbets.application.additions.Utils;
+import com.poolbets.application.additions.Utils.TextureData;
 
 import static com.poolbets.application.additions.Utils.getFont;
 import static com.poolbets.application.additions.Utils.getImageTextButton;
@@ -27,32 +26,27 @@ import static com.poolbets.application.additions.Utils.setPixmapColor;
  */
 public class BetsMenuScreen extends BaseScreen {
 
-    private PoolBetsApp app;
-    private Stage stage;
-    private BitmapFont fontMainS, fontMainB;
-    private Pixmap pLine;
-    private Texture tLine;
+    private BitmapFont smallFont, bigFont;
+    private Pixmap linePixmap;
+    private Texture lineTexture;
 
-    private Utils.TextureData buttonMainStyle;
+    private TextureData buttonStyle;
 
-    public BetsMenuScreen(PoolBetsApp app) {
+    public BetsMenuScreen(final PoolBetsApp app) {
         super(app);
 
-        this.app = getApp();
-        stage = getStage();
+        smallFont = getFont("PFSquareSansPro-Regular.ttf", 40, "#bac0ce", 1f);
+        bigFont = getFont("PFSquareSansPro-Regular.ttf", 60, "#bac0ce", 1f);
 
-        fontMainS = getFont("PFSquareSansPro-Regular.ttf", 40, "#bac0ce", 1);
-        fontMainB = getFont("PFSquareSansPro-Regular.ttf", 60, "#bac0ce", 1);
+        linePixmap = setPixmapColor(1, 1, "#61656e");
+        lineTexture = new Texture(linePixmap);
+        lineTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        pLine = setPixmapColor(1, 1, "#61656e");
-        tLine = new Texture(pLine);
-        tLine.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
-        buttonMainStyle = getImageTextButton(
+        buttonStyle = getImageTextButton(
                 1, 1,
                 "#61656e", "#e9e8e6",
                 "#fbfbf9", "#61656e",
-                fontMainB
+                bigFont
                 );
 
         createBetsMenu();
@@ -68,7 +62,7 @@ public class BetsMenuScreen extends BaseScreen {
             Array<Label> labels = new Array<Label>();
 
             labels.add(new Label("Manchester United FC - Manchester City FC",
-                    new Label.LabelStyle(fontMainB, Color.valueOf("#fbfbf9"))));
+                    new Label.LabelStyle(bigFont, Color.valueOf("#fbfbf9"))));
 
             labels.get(0).setAlignment(Align.center);
             labels.get(0).setWrap(true);
@@ -77,96 +71,100 @@ public class BetsMenuScreen extends BaseScreen {
                     "English Premier League" + ", " +
                     "Manchester" + "\n" +
                     "10.07.2016 19:00",
-                    new Label.LabelStyle(fontMainS, Color.valueOf("#fbfbf9"))));
-            
+                    new Label.LabelStyle(smallFont, Color.valueOf("#fbfbf9"))));
+
             labels.get(1).setAlignment(Align.center);
 
             labels.add(new Label("1",
-                    new Label.LabelStyle(fontMainS, Color.valueOf("#fbfbf9"))));
+                    new Label.LabelStyle(smallFont, Color.valueOf("#fbfbf9"))));
             labels.add(new Label("X",
-                    new Label.LabelStyle(fontMainS, Color.valueOf("#fbfbf9"))));
+                    new Label.LabelStyle(smallFont, Color.valueOf("#fbfbf9"))));
             labels.add(new Label("2",
-                    new Label.LabelStyle(fontMainS, Color.valueOf("#fbfbf9"))));
+                    new Label.LabelStyle(smallFont, Color.valueOf("#fbfbf9"))));
 
             Array<ImageTextButton> buttons = new Array<ImageTextButton>();
 
-            buttons.add(new ImageTextButton("1.86", buttonMainStyle.style));
-            buttons.add(new ImageTextButton("3.19", buttonMainStyle.style));
-            buttons.add(new ImageTextButton("2.52", buttonMainStyle.style));
+            buttons.add(new ImageTextButton("1.86", buttonStyle.style));
+            buttons.add(new ImageTextButton("3.19", buttonStyle.style));
+            buttons.add(new ImageTextButton("2.52", buttonStyle.style));
 
-            buttons.get(0).addCaptureListener(new ChangeListener() {
+            buttons.get(0).addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     System.out.println("Button 1");
                 }
             });
 
-            buttons.get(1).addCaptureListener(new ChangeListener() {
+            buttons.get(1).addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     System.out.println("Button 2");
                 }
             });
 
-            buttons.get(2).addCaptureListener(new ChangeListener() {
+            buttons.get(2).addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     System.out.println("Button 3");
                 }
             });
 
-            Table tableMatchInfo = new Table();
+            Table matchInfoTable = new Table();
 
-            tableMatchInfo.add(labels.get(0)).width(stage.getWidth()).
+            matchInfoTable.add(labels.get(0)).width(stage.getWidth()).
+                    height(stage.getHeight() / 8f).
                     colspan(3).expand().row();
-            tableMatchInfo.add(labels.get(1)).colspan(3).expand().row();
+            matchInfoTable.add(labels.get(1)).
+                    height(stage.getHeight() / 8f).
+                    colspan(3).expand().row();
 
-            Button buttonMoreAboutBet = new Button(tableMatchInfo,
+            Button betInfoButton = new Button(matchInfoTable,
                     new Button.ButtonStyle(null, null, null));
             final int finalI = i;
-            buttonMoreAboutBet.addCaptureListener(new ChangeListener() {
+            betInfoButton.addCaptureListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     System.out.println(finalI + "");
                 }
             });
 
-            Table tableBetInfo = new Table();
+            Table betInfoTable = new Table();
 
-            tableBetInfo.add(buttonMoreAboutBet).height(stage.getHeight() / 6f).
+            betInfoTable.add(betInfoButton).height(stage.getHeight() / 4f).
                     colspan(3).expandY().row();
-            tableBetInfo.add(labels.get(2));
-            tableBetInfo.add(labels.get(3));
-            tableBetInfo.add(labels.get(4)).row();
-            tableBetInfo.add(buttons.get(0)).width(stage.getWidth() / 4f).
+            betInfoTable.add(labels.get(2));
+            betInfoTable.add(labels.get(3));
+            betInfoTable.add(labels.get(4)).row();
+            betInfoTable.add(buttons.get(0)).width(stage.getWidth() / 4f).
                     height(stage.getHeight() / 15f).
                     expand();
-            tableBetInfo.add(buttons.get(1)).width(stage.getWidth() / 4f).
+            betInfoTable.add(buttons.get(1)).width(stage.getWidth() / 4f).
                     height(stage.getHeight() / 15f).
                     expand();
-            tableBetInfo.add(buttons.get(2)).width(stage.getWidth() / 4f).
+            betInfoTable.add(buttons.get(2)).width(stage.getWidth() / 4f).
                     height(stage.getHeight() / 15f).
                     expand().row();
 
             if (i != n - 1) {
 
-                Image line = new Image(tLine);
+                Image line = new Image(lineTexture);
 
-                tableBetInfo.add(line).width(stage.getWidth() * 7 / 8f).
+                betInfoTable.add(line).width(stage.getWidth() * 7 / 8f).
                         height(4).colspan(3);
             }
 
-            sections.add(tableBetInfo).width(stage.getWidth()).
-                    height(stage.getHeight() / 3f).row();
+            sections.add(betInfoTable).width(stage.getWidth()).
+                    height(stage.getHeight() * 3 / 5f).row();
         }
 
-        ScrollPane scrollTable = new ScrollPane(sections);
-        scrollTable.setPosition(0, 0);
-        scrollTable.setWidth(stage.getWidth());
-        scrollTable.setHeight(stage.getHeight() * 9 / 10f);
-        scrollTable.setupOverscroll(stage.getHeight() / 5f, 500, 500);
+        ScrollPane scrollPane = new ScrollPane(sections);
+        scrollPane.setPosition(0, 0);
+        scrollPane.setWidth(stage.getWidth());
+        scrollPane.setHeight(stage.getHeight() * 9 / 10f);
+        scrollPane.setupOverscroll(stage.getHeight() / 5f, 500, 500);
 
-        stage.addActor(scrollTable);
+        stage.addActor(scrollPane);
+        stage.setScrollFocus(scrollPane);
     }
 
     @Override
@@ -201,15 +199,14 @@ public class BetsMenuScreen extends BaseScreen {
 
     @Override
     public void dispose() {
-        super.dispose();
 
-        fontMainS.dispose();
-        fontMainB.dispose();
-        buttonMainStyle.texture1.getRegion().getTexture().dispose();
-        buttonMainStyle.texture2.getRegion().getTexture().dispose();
-        buttonMainStyle.pixmap1.dispose();
-        buttonMainStyle.pixmap2.dispose();
-        pLine.dispose();
-        tLine.dispose();
+        smallFont.dispose();
+        bigFont.dispose();
+        buttonStyle.texture1.getRegion().getTexture().dispose();
+        buttonStyle.texture2.getRegion().getTexture().dispose();
+        buttonStyle.pixmap1.dispose();
+        buttonStyle.pixmap2.dispose();
+        linePixmap.dispose();
+        lineTexture.dispose();
     }
 }

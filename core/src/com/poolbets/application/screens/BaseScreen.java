@@ -1,42 +1,32 @@
 package com.poolbets.application.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.poolbets.application.PoolBetsApp;
-import com.poolbets.application.additions.Utils;
+import com.poolbets.application.actors.Header;
+import com.poolbets.application.actors.NavigationDrawer;
 
 import static com.poolbets.application.additions.Constants.*;
 import static com.poolbets.application.additions.Utils.getColorRGB;
-import static com.poolbets.application.additions.Utils.getFont;
-import static com.poolbets.application.additions.Utils.getImageTextButton;
 import static com.poolbets.application.additions.Utils.setGLBackgroundColor;
-import static com.poolbets.application.additions.Utils.setPixmapColor;
 
 /**
  * Created by Mashenkin Roman on 07.07.16.
  */
 class BaseScreen implements Screen {
 
-    private PoolBetsApp app;
-    private Color glBackgroundColor;
-    private Stage stage;
-    private Pixmap pHeaderTableBackground;
-    private TextureRegionDrawable tHeaderTableBackground;
-    private BitmapFont fontHeaderBrand, fontHeaderButton;
+    protected PoolBetsApp app;
+    protected Color glBackgroundColor;
+    protected Stage stage;
 
-    private Utils.TextureData buttonHeaderStyle;
+    protected Header header;
+    protected NavigationDrawer navigationDrawer;
 
     BaseScreen(final PoolBetsApp app) {
 
@@ -46,58 +36,42 @@ class BaseScreen implements Screen {
 
         stage = new Stage(new StretchViewport(WORLD_WIDTH,
                 WORLD_HEIGHT * RATIO));
-        Gdx.input.setInputProcessor(stage);
 
-        fontHeaderBrand = getFont("BigOrange.otf", 80, "#bac0ce", 1.75f);
-        fontHeaderButton = getFont("DINProBold.otf", 40, "#bac0ce", 1.5f);
+        createHeaderMenu();
+        createNavigationDrawerMenu();
 
-        pHeaderTableBackground = setPixmapColor(1, 1, "#61656e");
-        tHeaderTableBackground =
-                new TextureRegionDrawable(new TextureRegion(new Texture(pHeaderTableBackground)));
-
-        buttonHeaderStyle = getImageTextButton(
-                1, 1,
-                "#61656e", "#e9e8e6",
-                "#fbfbf9", "#61656e",
-                fontHeaderButton
-        );
-
-        createInfoTable();
+        InputMultiplexer inputMultiplexer =
+                new InputMultiplexer(navigationDrawer.addGestureDetector(stage), stage);
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
-    private void createInfoTable() {
+    private void createHeaderMenu() {
 
-        Table table = new Table();
-        table.setPosition(0, stage.getHeight() * 9 / 10f);
-        table.setSize(stage.getWidth(), stage.getHeight() / 10f);
-        table.setBackground(tHeaderTableBackground);
+        header = new Header(stage.getWidth(), stage.getHeight());
+        header.getMenuButton().addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!navigationDrawer.getFlag()[1]) {
+                    stage.addActor(navigationDrawer);
+                    navigationDrawer.getFlag()[0] = true;
+                }
+            }
+        });
+        header.getCashButton().setText("63794\nCUB");
 
-        Label labelHeaderBrand = new Label("PoolBets",
-                new Label.LabelStyle(fontHeaderBrand, Color.valueOf("#fbfbf9")));
-        labelHeaderBrand.setAlignment(Align.center);
-
-        ImageTextButton buttonMenu = new ImageTextButton("<<<", buttonHeaderStyle.style);
-        ImageTextButton buttonCash = new ImageTextButton("63794\nCUB", buttonHeaderStyle.style);
-
-        table.add(buttonMenu).width(stage.getWidth() / 4f).
-                height(stage.getHeight() / 10f).
-                expand();
-        table.add(labelHeaderBrand).width(stage.getWidth() / 2f).
-                height(stage.getHeight() / 10f).
-                expand();
-        table.add(buttonCash).width(stage.getWidth() / 4f).
-                height(stage.getHeight() / 10f).
-                expand();
-
-        stage.addActor(table);
+        stage.addActor(header);
     }
 
-    public PoolBetsApp getApp() {
-        return app;
-    }
+    private void createNavigationDrawerMenu() {
 
-    public Stage getStage() {
-        return stage;
+        navigationDrawer = new NavigationDrawer(stage.getWidth(), stage.getHeight());
+        navigationDrawer.getCloseButton().addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!navigationDrawer.getFlag()[0] )
+                    navigationDrawer.getFlag()[1] = true;
+            }
+        });
     }
 
     @Override
@@ -114,6 +88,9 @@ class BaseScreen implements Screen {
                 glBackgroundColor.b,
                 glBackgroundColor.a
         );
+
+        if (navigationDrawer.getFlag()[0] || navigationDrawer.getFlag()[1])
+            navigationDrawer.showNavigationDrawer(stage);
 
         stage.act(delta);
         stage.draw();
@@ -143,13 +120,7 @@ class BaseScreen implements Screen {
     public void dispose() {
 
         stage.dispose();
-        fontHeaderBrand.dispose();
-        fontHeaderButton.dispose();
-        pHeaderTableBackground.dispose();
-        tHeaderTableBackground.getRegion().getTexture().dispose();
-        buttonHeaderStyle.pixmap1.dispose();
-        buttonHeaderStyle.pixmap2.dispose();
-        buttonHeaderStyle.texture1.getRegion().getTexture().dispose();
-        buttonHeaderStyle.texture2.getRegion().getTexture().dispose();
+        header.dispose();
+        navigationDrawer.dispose();
     }
 }

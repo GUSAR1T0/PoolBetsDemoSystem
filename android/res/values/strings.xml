@@ -2,5 +2,6 @@
 <resources>
 
     <string name="app_name">PoolBets</string>
+    <string name="version">1.0.1</string>
 
 </resources>
