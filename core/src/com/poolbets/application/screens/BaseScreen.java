@@ -12,7 +12,9 @@ import com.poolbets.application.PoolBetsApp;
 import com.poolbets.application.actors.Header;
 import com.poolbets.application.actors.NavigationDrawer;
 
-import static com.poolbets.application.additions.Constants.*;
+import static com.poolbets.application.additions.Constants.WORLD_HEIGHT;
+import static com.poolbets.application.additions.Constants.WORLD_WIDTH;
+import static com.poolbets.application.additions.Constants.RATIO;
 import static com.poolbets.application.additions.Utils.getColorRGB;
 import static com.poolbets.application.additions.Utils.setGLBackgroundColor;
 

@@ -50,6 +50,14 @@ public class BetsMenuScreen extends BaseScreen {
                 );
 
         createBetsMenu();
+
+        header.getCashButton().addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                dispose();
+                app.setScreen(new AuthorizationScreen(app));
+            }
+        });
     }
 
     private void createBetsMenu() {
@@ -200,6 +208,7 @@ public class BetsMenuScreen extends BaseScreen {
     @Override
     public void dispose() {
 
+        super.dispose();
         smallFont.dispose();
         bigFont.dispose();
         buttonStyle.texture1.getRegion().getTexture().dispose();

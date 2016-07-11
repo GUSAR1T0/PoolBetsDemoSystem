@@ -13,7 +13,7 @@ import static com.poolbets.application.additions.Utils.getFont;
  */
 public class Brand extends Table {
 
-    private final BitmapFont brandFont;
+    private BitmapFont brandFont;
     private BitmapFont taglineFont;
 
     public Brand(float width, float height) {
@@ -23,30 +23,20 @@ public class Brand extends Table {
 
         Label brandLabel = new Label("PoolBets",
                 new Label.LabelStyle(brandFont, Color.valueOf("#fbfbf9")));
-        brandLabel.setAlignment(Align.center | Align.bottom);
+        brandLabel.setAlignment(Align.center);
 
         Label taglineLabel = new Label("Easy betting, life is moneymaking",
                 new Label.LabelStyle(taglineFont, Color.valueOf("#fbfbf9")));
-        taglineLabel.setAlignment(Align.center | Align.top);
+        taglineLabel.setAlignment(Align.center);
 
-        add(brandLabel).width(width).height(height / 2f).row();
-        add(taglineLabel).width(width).height(height / 2f).row();
-    }
-
-    public Brand() {
-
-        brandFont = getFont("BigOrange.otf", 80, "#bac0ce", 1.75f);
-
-        Label brandLabel = new Label("PoolBets",
-                new Label.LabelStyle(brandFont, Color.valueOf("#fbfbf9")));
-        brandLabel.setAlignment(Align.center | Align.bottom);
-
-        add(brandLabel).row();
+        setSize(width, height);
+        add(brandLabel).width(width).height(height / 2f).expand().row();
+        add(taglineLabel).width(width).height(height / 2f).expand().row();
     }
 
     public void dispose() {
 
         brandFont.dispose();
-        if (taglineFont != null) taglineFont.dispose();
+        taglineFont.dispose();
     }
 }

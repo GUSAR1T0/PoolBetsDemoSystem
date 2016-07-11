@@ -1,17 +1,19 @@
 package com.poolbets.application;
 
 import com.badlogic.gdx.Game;
-import com.poolbets.application.screens.BetsMenuScreen;
+import com.poolbets.application.actors.Header;
+import com.poolbets.application.actors.NavigationDrawer;
+import com.poolbets.application.screens.AuthorizationScreen;
 
 /**
  * Created by Mashenkin Roman on 07.07.16.
  */
 public class PoolBetsApp extends Game {
-	
+
 	@Override
 	public void create () {
 
-		setScreen(new BetsMenuScreen(this));
+		setScreen(new AuthorizationScreen(this));
 	}
 
 	@Override

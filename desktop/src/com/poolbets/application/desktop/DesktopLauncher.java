@@ -6,6 +6,9 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.poolbets.application.PoolBetsApp;
 
 import static com.poolbets.application.additions.Constants.*;
+import static com.poolbets.application.additions.Utils.isMac;
+import static com.poolbets.application.additions.Utils.isUnix;
+import static com.poolbets.application.additions.Utils.isWindows;
 
 public class DesktopLauncher {
 
@@ -21,18 +24,5 @@ public class DesktopLauncher {
 		else if (isMac()) config.addIcon(ICON_FOR_MAC, Files.FileType.Internal);
 
 		new LwjglApplication(new PoolBetsApp(), config);
-	}
-
-	public static boolean isWindows() {
-		return System.getProperty("os.name").toLowerCase().contains("win");
-	}
-
-	public static boolean isUnix() {
-		return (System.getProperty("os.name").toLowerCase().contains("nux") ||
-				System.getProperty("os.name").toLowerCase().contains("nix"));
-	}
-
-	public static boolean isMac() {
-		return System.getProperty("os.name").toLowerCase().contains("mac");
 	}
 }

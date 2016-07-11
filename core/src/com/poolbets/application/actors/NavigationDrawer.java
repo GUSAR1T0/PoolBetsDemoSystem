@@ -24,20 +24,20 @@ import static com.poolbets.application.additions.Utils.setPixmapColor;
  */
 public class NavigationDrawer extends Table {
 
-    private final Pixmap backgroundPixmap;
-    private final TextureRegionDrawable backgroundTexture;
-    private final BitmapFont buttonFont;
-    private final Table menuTable;
-    private final Button closeButton;
+    private Pixmap backgroundPixmap;
+    private TextureRegionDrawable backgroundTexture;
+    private BitmapFont buttonFont;
+    private Table menuTable;
+    private Button closeButton;
 
-    private final TextureData buttonStyle;
-    private final Brand brand;
+    private TextureData buttonStyle;
+    private Brand brand;
 
-    private final boolean[] flag = new boolean[]{false, false};
-    private final float flingSpeed = 1000;
-    private final float width, height;
+    private boolean[] flag = new boolean[]{false, false};
+    private float flingSpeed = 1000;
+    private float width, height;
     private float positionX;
-    private final float dx;
+    private float dx;
 
     public NavigationDrawer(float width, float height) {
 
@@ -54,7 +54,7 @@ public class NavigationDrawer extends Table {
                 buttonFont
         );
 
-        brand = new Brand(width, height * 2 / 5f);
+        brand = new Brand(width * 3 / 4f, height * 2 / 5f);
 
         this.width = width * 3 / 4f;
         this.height = height;
