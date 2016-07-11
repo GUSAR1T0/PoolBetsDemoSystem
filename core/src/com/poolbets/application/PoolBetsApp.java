@@ -1,8 +1,6 @@
 package com.poolbets.application;
 
 import com.badlogic.gdx.Game;
-import com.poolbets.application.actors.Header;
-import com.poolbets.application.actors.NavigationDrawer;
 import com.poolbets.application.screens.AuthorizationScreen;
 
 /**
