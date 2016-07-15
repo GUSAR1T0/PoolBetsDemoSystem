@@ -22,22 +22,17 @@ public class Server extends Thread {
     private Main main;
     private ServerSocket ss;
     private ArrayList<Client> clients;
-    private String ipAddress;
-    private int port;
 
     public Server(Main main, int port, String ipAddress) throws IOException {
 
+        ss = new ServerSocket(port, 0, InetAddress.getByName(ipAddress));
+        ss.setSoTimeout(5000);
+
         this.main = main;
-        this.port = port;
-        this.ipAddress = ipAddress;
 
         setDaemon(true);
         setPriority(NORM_PRIORITY);
         start();
-    }
-
-    public ServerSocket getServerSocket() {
-        return ss;
     }
 
     public void stopServer() throws IOException {
@@ -50,13 +45,6 @@ public class Server extends Thread {
         Socket socket;
         clients = new ArrayList<>();
 
-        try {
-            ss = new ServerSocket(port, 0, InetAddress.getByName(ipAddress));
-            ss.setSoTimeout(5000);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         while (true) {
             try {
                 socket = ss.accept();
@@ -67,10 +55,7 @@ public class Server extends Thread {
                 String line = in.readUTF();
                 analise(line, out);
 
-            } catch (Exception x) {
-                x.printStackTrace();
-                break;
-            }
+            } catch (Exception x) { break; }
         }
     }
 
