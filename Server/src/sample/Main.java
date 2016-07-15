@@ -16,8 +16,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import sample.models.Server;
 
-import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class Main extends Application {
 
     private ListView<String> onlineList, messagesList;
-//    private Server server = null;
+    private Server server = null;
     private int port;
 
     private static final String IPADDRESS_PATTERN =
@@ -104,7 +104,7 @@ public class Main extends Application {
             if (launchButton.getText().equals("Launch") || launchButton.getText().equals("Connect")) {
                 if (validateIP(ipTextField.getText()) && (validatePort(portTextField.getText()))) {
                     try {
-//                        server = new Server(Main.this, port, ipTextField.getText());
+                        server = new Server(Main.this, port, ipTextField.getText());
 
                         launchButton.setText((textLabel.charAt(0) == 'M') ? "Disconnect" : "Stop");
 
@@ -149,7 +149,7 @@ public class Main extends Application {
             }
             else {
                 try {
-//                    server.stopServer();
+                    server.stopServer();
 
                     launchButton.setText((textLabel.charAt(0) == 'M') ? "Connect" : "Launch");
 
