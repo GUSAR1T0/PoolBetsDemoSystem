@@ -24,4 +24,6 @@ public class Constants {
    public static final String ICON_FOR_WINDOWS = "data/icons/icon_for_windows.png";
    public static final String ICON_FOR_UNIX = "data/icons/icon_for_unix.png";
    public static final String ICON_FOR_MAC = "data/icons/icon_for_mac.png";
+
+   public static final String TEXTURE_ICON = "data/textures/icon.png";
 }

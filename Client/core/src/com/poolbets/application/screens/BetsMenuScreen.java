@@ -17,7 +17,7 @@ import com.badlogic.gdx.utils.Array;
 import com.poolbets.application.PoolBetsApp;
 import com.poolbets.application.additions.Utils.TextureData;
 
-import static com.poolbets.application.additions.Utils.getFont;
+import static com.poolbets.application.additions.Codes.CODE_SUCCESS;
 import static com.poolbets.application.additions.Utils.getImageTextButton;
 import static com.poolbets.application.additions.Utils.setPixmapColor;
 
@@ -35,8 +35,8 @@ public class BetsMenuScreen extends BaseScreen {
     public BetsMenuScreen(final PoolBetsApp app) {
         super(app);
 
-        smallFont = getFont("PFSquareSansPro-Regular.ttf", 40, "#bac0ce", 1f);
-        bigFont = getFont("PFSquareSansPro-Regular.ttf", 60, "#bac0ce", 1f);
+        smallFont = app.getManager().get("PFSSP_40_bac0ce.ttf", BitmapFont.class);
+        bigFont = app.getManager().get("PFSSP_60_bac0ce.ttf", BitmapFont.class);
 
         linePixmap = setPixmapColor(1, 1, "#61656e");
         lineTexture = new Texture(linePixmap);
@@ -45,7 +45,7 @@ public class BetsMenuScreen extends BaseScreen {
         buttonStyle = getImageTextButton(
                 1, 1,
                 "#61656e", "#e9e8e6",
-                "#fbfbf9", "#61656e",
+                "#fbfbf9", "#2f2c30",
                 bigFont
                 );
 
@@ -54,8 +54,11 @@ public class BetsMenuScreen extends BaseScreen {
         header.getCashButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                dispose();
-                app.setScreen(new AuthorizationScreen(app));
+                app.getClient().disconnect();
+                if (app.getClient().getCode().equals(CODE_SUCCESS)) {
+                    dispose();
+                    app.setScreen(new AuthorizationScreen(app));
+                }
             }
         });
     }
@@ -209,8 +212,6 @@ public class BetsMenuScreen extends BaseScreen {
     public void dispose() {
 
         super.dispose();
-        smallFont.dispose();
-        bigFont.dispose();
         buttonStyle.texture1.getRegion().getTexture().dispose();
         buttonStyle.texture2.getRegion().getTexture().dispose();
         buttonStyle.pixmap1.dispose();

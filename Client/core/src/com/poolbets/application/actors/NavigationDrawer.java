@@ -1,5 +1,6 @@
 package com.poolbets.application.actors;
 
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -15,7 +16,6 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.poolbets.application.additions.Utils.TextureData;
 
-import static com.poolbets.application.additions.Utils.getFont;
 import static com.poolbets.application.additions.Utils.getImageTextButton;
 import static com.poolbets.application.additions.Utils.setPixmapColor;
 
@@ -26,7 +26,6 @@ public class NavigationDrawer extends Table {
 
     private Pixmap backgroundPixmap;
     private TextureRegionDrawable backgroundTexture;
-    private BitmapFont buttonFont;
     private Table menuTable;
     private Button closeButton;
 
@@ -39,22 +38,20 @@ public class NavigationDrawer extends Table {
     private float positionX;
     private float dx;
 
-    public NavigationDrawer(float width, float height) {
+    public NavigationDrawer(AssetManager manager, float width, float height) {
 
         backgroundPixmap = setPixmapColor(1, 1, "#2f2c30");
         backgroundTexture = new TextureRegionDrawable(new TextureRegion(
                 new Texture(backgroundPixmap)));
 
-        buttonFont = getFont("DINProBold.otf", 60, "#bac0ce", 1.75f);
-
         buttonStyle = getImageTextButton(
                 1, 1,
                 "#61656e", "#e9e8e6",
-                "#fbfbf9", "#61656e",
-                buttonFont
+                "#fbfbf9", "#2f2c30",
+                manager.get("DINPro_60_bac0ce.ttf", BitmapFont.class)
         );
 
-        brand = new Brand(width * 3 / 4f, height * 2 / 5f);
+        brand = new Brand(manager, width * 3 / 4f, height * 2 / 5f);
 
         this.width = width * 3 / 4f;
         this.height = height;
@@ -205,11 +202,9 @@ public class NavigationDrawer extends Table {
 
         backgroundPixmap.dispose();
         backgroundTexture.getRegion().getTexture().dispose();
-        buttonFont.dispose();
         buttonStyle.pixmap1.dispose();
         buttonStyle.pixmap2.dispose();
         buttonStyle.texture1.getRegion().getTexture().dispose();
         buttonStyle.texture2.getRegion().getTexture().dispose();
-        brand.dispose();
     }
 }

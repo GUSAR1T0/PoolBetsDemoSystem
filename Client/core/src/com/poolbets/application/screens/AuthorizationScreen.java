@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -23,14 +24,17 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.poolbets.application.PoolBetsApp;
 import com.poolbets.application.actors.Brand;
 import com.poolbets.application.additions.Utils.TextureData;
+import com.poolbets.application.models.Client;
 import com.poolbets.application.models.User;
 
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.alpha;
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo;
+import static com.poolbets.application.additions.Codes.*;
 import static com.poolbets.application.additions.Constants.WORLD_HEIGHT;
 import static com.poolbets.application.additions.Constants.WORLD_WIDTH;
 import static com.poolbets.application.additions.Constants.RATIO;
 import static com.poolbets.application.additions.Utils.getColorRGB;
-import static com.poolbets.application.additions.Utils.getFont;
 import static com.poolbets.application.additions.Utils.getImageTextButton;
 import static com.poolbets.application.additions.Utils.setGLBackgroundColor;
 import static com.poolbets.application.additions.Utils.setPixmapColor;
@@ -65,12 +69,14 @@ public class AuthorizationScreen implements Screen {
         stage = new Stage(new StretchViewport(WORLD_WIDTH,
                 WORLD_HEIGHT * RATIO));
         Gdx.input.setInputProcessor(stage);
+        stage.getRoot().getColor().a = 0f;
+        stage.addAction(fadeIn(2f));
 
-        brand = new Brand(stage.getWidth(), stage.getHeight() / 8f);
+        brand = new Brand(app.getManager(), stage.getWidth(), stage.getHeight() / 8f);
 
         user = new User("person_data");
 
-        font = getFont("PFSquareSansPro-Regular.ttf", 40, "#61656e", 1f);
+        font = app.getManager().get("PFSSP_40_61656e.ttf", BitmapFont.class);
 
         cursorPixmap = setPixmapColor(1, 1, "#2f2c30");
         selectionPixmap = setPixmapColor(1, 1, "#61656e");
@@ -102,7 +108,7 @@ public class AuthorizationScreen implements Screen {
         buttonStyle = getImageTextButton(
                 1, 1,
                 "#61656e", "#e9e8e6",
-                "#fbfbf9", "#61656e",
+                "#fbfbf9", "#2f2c30",
                 font
         );
 
@@ -112,7 +118,12 @@ public class AuthorizationScreen implements Screen {
 
         stage.getRoot().addCaptureListener(new InputListener() {
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                if (!(event.getTarget() instanceof TextField)) {
+                if (!(event.getTarget() instanceof TextField) &&
+                        !(event.getTarget() instanceof CheckBox) &&
+                        !(event.getTarget() instanceof Label) &&
+                        !(event.getTarget() instanceof ImageTextButton) &&
+                        !(event.getTarget() instanceof Image)) {
+
                     stage.setKeyboardFocus(null);
                     Gdx.input.setOnscreenKeyboardVisible(false);
                     menuTable.addAction(moveTo(0, 0, 0.2f));
@@ -164,37 +175,89 @@ public class AuthorizationScreen implements Screen {
         checkBox.getImageCell().padRight(25);
         if (user.isExist()) checkBox.setChecked(true);
 
+        final Label messageLabel = new Label("",
+                new Label.LabelStyle(font, Color.valueOf("#cc4b4b")));
+        messageLabel.setAlignment(Align.center);
+
         ImageTextButton signInButton = new ImageTextButton("Sign In", buttonStyle.style);
-        if (!user.isExist()) {
-            signInButton.getColor().a = 0.5f;
-            signInButton.setDisabled(true);
-        }
         signInButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if ((loginField.getText().equals(user.getLogin())) &&
-                        (passwordField.getText().equals(user.getPassword()))) {
+                stage.setKeyboardFocus(null);
+                Gdx.input.setOnscreenKeyboardVisible(false);
+
+                messageLabel.setText("");
+
+                app.setClient(new Client(loginField.getText(), passwordField.getText(),
+                        CODE_AUTHORIZATION));
+                if (app.getClient().getCode().equals(CODE_CONNECTED)) {
+
+                    user.setLogin(loginField.getText());
+                    user.setPassword(passwordField.getText());
+
+                    if (!checkBox.isChecked())
+                        user.deleteData();
+                    else
+                        user.saveData();
+
                     dispose();
-                    if (!checkBox.isChecked()) user.deleteData();
                     app.setScreen(new BetsMenuScreen(app));
+                } else if (app.getClient().getCode().equals(CODE_ERROR_AUTHORIZATION)) {
+                    messageLabel.setText("Wrong login or password");
+                    messageLabel.getColor().a = 0f;
+                    messageLabel.addAction(fadeIn(1f));
+
+                    loginField.getColor().a = 0f;
+                    loginField.addAction(alpha(1, 0.5f));
+
+                    passwordField.getColor().a = 0f;
+                    passwordField.addAction(alpha(1, 0.5f));
+                } else if (app.getClient().getCode().equals(CODE_ERROR_CONNECTION)) {
+                    messageLabel.setText("Not connection with server");
+                    messageLabel.getColor().a = 0f;
+                    messageLabel.addAction(fadeIn(1f));
                 }
             }
         });
 
         ImageTextButton signUpButton = new ImageTextButton("Sign Up", buttonStyle.style);
-        if (user.isExist()) {
-            signUpButton.getColor().a = 0.5f;
-            signUpButton.setDisabled(true);
-        }
         signUpButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                user.setLogin(loginField.getText());
-                user.setPassword(passwordField.getText());
-                user.saveData();
-                dispose();
-                if (!checkBox.isChecked()) user.deleteData();
-                app.setScreen(new BetsMenuScreen(app));
+                stage.setKeyboardFocus(null);
+                Gdx.input.setOnscreenKeyboardVisible(false);
+
+                messageLabel.setText("");
+
+                app.setClient(new Client(loginField.getText(), passwordField.getText(),
+                        CODE_REGISTRATION));
+                if (app.getClient().getCode().equals(CODE_CONNECTED)) {
+
+                    user.setLogin(loginField.getText());
+                    user.setPassword(passwordField.getText());
+
+                    if (!checkBox.isChecked())
+                        user.deleteData();
+                    else
+                        user.saveData();
+
+                    dispose();
+                    app.setScreen(new BetsMenuScreen(app));
+                } else if (app.getClient().getCode().equals(CODE_ERROR_REGISTRATION)) {
+                    messageLabel.setText("This login has already been taken");
+                    messageLabel.getColor().a = 0;
+                    messageLabel.addAction(fadeIn(1f));
+
+                    loginField.getColor().a = 0f;
+                    loginField.addAction(alpha(1, 0.5f));
+
+                    passwordField.getColor().a = 0f;
+                    passwordField.addAction(alpha(1, 0.5f));
+                } else if (app.getClient().getCode().equals(CODE_ERROR_CONNECTION)) {
+                    messageLabel.setText("Not connection with server");
+                    messageLabel.getColor().a = 0;
+                    messageLabel.addAction(fadeIn(1f));
+                }
             }
         });
 
@@ -210,12 +273,16 @@ public class AuthorizationScreen implements Screen {
                 expand().colspan(2).row();
         table.add(checkBox).width(stage.getWidth() / 2f).height(stage.getHeight() / 10f).
                 expand().colspan(2).row();
-        table.add(signInButton).width(stage.getWidth() / 5f).height(stage.getHeight() / 15f).center().expand();
-        table.add(signUpButton).width(stage.getWidth() / 5f).height(stage.getHeight() / 15f).center().expand();
+        table.add(signInButton).width(stage.getWidth() / 5f).height(stage.getHeight() / 15f).
+                center().expand();
+        table.add(signUpButton).width(stage.getWidth() / 5f).height(stage.getHeight() / 15f).
+                center().expand();
 
         menuTable.setPosition(0, 0);
         menuTable.setSize(stage.getWidth(), stage.getHeight());
         menuTable.add(brand).expand().row();
+        menuTable.add(messageLabel).width(stage.getWidth() / 2f).height(stage.getHeight() / 20f).
+                row();
         menuTable.add(table).expand();
 
         stage.addActor(menuTable);
@@ -264,7 +331,6 @@ public class AuthorizationScreen implements Screen {
     public void dispose() {
 
         stage.dispose();
-        brand.dispose();
         cursorPixmap.dispose();
         selectionPixmap.dispose();
         backgroundPixmap.dispose();
@@ -275,7 +341,6 @@ public class AuthorizationScreen implements Screen {
         backgroundTexture.getRegion().getTexture().dispose();
         checkBoxOffTexture.getRegion().getTexture().dispose();
         checkBoxOnTexture.getRegion().getTexture().dispose();
-        font.dispose();
         buttonStyle.pixmap1.dispose();
         buttonStyle.pixmap2.dispose();
         buttonStyle.texture1.getRegion().getTexture().dispose();

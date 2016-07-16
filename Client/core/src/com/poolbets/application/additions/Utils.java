@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
@@ -46,26 +46,21 @@ public class Utils {
         return pixmap;
     }
 
-    public static BitmapFont getFont(String fontName, int fontSize,
-                                     String colorBorder, float borderWidth) {
+    public static FreetypeFontLoader.FreeTypeFontLoaderParameter getFontParameters
+            (String fontName, int fontSize, float borderWidth, String colorBorder) {
 
-        FreeTypeFontGenerator generator =
-                new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/" + fontName));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter =
-                new FreeTypeFontGenerator.FreeTypeFontParameter();
+        FreetypeFontLoader.FreeTypeFontLoaderParameter parameter =
+            new FreetypeFontLoader.FreeTypeFontLoaderParameter();
 
-        parameter.characters = FONT_CHARS;
-        parameter.size = fontSize;
-        parameter.borderColor = Color.valueOf(colorBorder);
-        parameter.borderWidth = borderWidth;
-        parameter.minFilter = Texture.TextureFilter.Linear;
-        parameter.magFilter = Texture.TextureFilter.Linear;
+        parameter.fontFileName = "data/fonts/" + fontName;
+        parameter.fontParameters.characters = FONT_CHARS;
+        parameter.fontParameters.size = fontSize;
+        parameter.fontParameters.borderWidth = borderWidth;
+        parameter.fontParameters.borderColor = Color.valueOf(colorBorder);
+        parameter.fontParameters.minFilter = Texture.TextureFilter.Linear;
+        parameter.fontParameters.magFilter = Texture.TextureFilter.Linear;
 
-        BitmapFont font = generator.generateFont(parameter);
-
-        generator.dispose();
-
-        return font;
+        return parameter;
     }
 
     public static TextureData getImageTextButton
@@ -94,18 +89,5 @@ public class Utils {
         temp.style.downFontColor = Color.valueOf(downTextColor);
 
         return temp;
-    }
-
-    public static boolean isWindows() {
-        return System.getProperty("os.name").toLowerCase().contains("win");
-    }
-
-    public static boolean isUnix() {
-        return (System.getProperty("os.name").toLowerCase().contains("nux") ||
-                System.getProperty("os.name").toLowerCase().contains("nix"));
-    }
-
-    public static boolean isMac() {
-        return System.getProperty("os.name").toLowerCase().contains("mac");
     }
 }

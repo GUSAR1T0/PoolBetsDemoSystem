@@ -12,6 +12,7 @@ import com.poolbets.application.PoolBetsApp;
 import com.poolbets.application.actors.Header;
 import com.poolbets.application.actors.NavigationDrawer;
 
+import static com.poolbets.application.additions.Codes.CODE_AUTHORIZATION;
 import static com.poolbets.application.additions.Constants.WORLD_HEIGHT;
 import static com.poolbets.application.additions.Constants.WORLD_WIDTH;
 import static com.poolbets.application.additions.Constants.RATIO;
@@ -49,7 +50,7 @@ class BaseScreen implements Screen {
 
     private void createHeaderMenu() {
 
-        header = new Header(stage.getWidth(), stage.getHeight());
+        header = new Header(app.getManager(), stage.getWidth(), stage.getHeight());
         header.getMenuButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -66,7 +67,8 @@ class BaseScreen implements Screen {
 
     private void createNavigationDrawerMenu() {
 
-        navigationDrawer = new NavigationDrawer(stage.getWidth(), stage.getHeight());
+        navigationDrawer = new NavigationDrawer(app.getManager(),
+                stage.getWidth(), stage.getHeight());
         navigationDrawer.getCloseButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -105,12 +107,12 @@ class BaseScreen implements Screen {
 
     @Override
     public void pause() {
-
+        app.getClient().disconnect();
     }
 
     @Override
     public void resume() {
-
+        app.getClient().connect(CODE_AUTHORIZATION);
     }
 
     @Override
