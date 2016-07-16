@@ -15,4 +15,6 @@ public class Codes {
 
     public static final String CODE_CONNECTED = "200";
     public static final String CODE_DISCONNECTED = "201";
+
+    public static final String CODE_SUCCESS = "300";
 }

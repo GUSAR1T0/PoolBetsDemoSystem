@@ -19,11 +19,11 @@ class Client {
         this.password = password;
         this.code = code;
 
-        if (Objects.equals(code, CODE_AUTHORIZATION)) {
+        if (Objects.equals(this.code, CODE_AUTHORIZATION)) {
             if (authorization()) this.code = CODE_CONNECTED;
             else this.code = CODE_ERROR_AUTHORIZATION;
         }
-        if (Objects.equals(code, CODE_REGISTRATION)) {
+        if (Objects.equals(this.code, CODE_REGISTRATION)) {
             if (registration()) this.code = CODE_CONNECTED;
             else this.code = CODE_ERROR_REGISTRATION;
         }

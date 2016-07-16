@@ -189,7 +189,7 @@ public class Main extends Application {
         Pattern pattern = Pattern.compile(IPADDRESS_PATTERN);
         Matcher matcher = pattern.matcher(ipAddress);
 
-        return matcher.matches();
+        return matcher.matches() || ipAddress.equals("localhost");
     }
 
     private boolean validatePort(String port) {
@@ -207,7 +207,7 @@ public class Main extends Application {
         return false;
     }
 
-    void connectInfo(String login, boolean registration) {
+    public void connectInfo(String login, boolean registration) {
 
         ListView<String> messagesList = this.messagesList;
         ListView<String> onlineList = this.onlineList;
@@ -230,7 +230,7 @@ public class Main extends Application {
         onlineList.setItems(items);
     }
 
-    void disconnectInfo(String login) {
+    public void disconnectInfo(String login) {
 
         ListView<String> messagesList = this.messagesList;
         ListView<String> onlineList = this.onlineList;

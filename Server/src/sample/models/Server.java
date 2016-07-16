@@ -1,5 +1,6 @@
 package sample.models;
 
+import javafx.application.Platform;
 import sample.Main;
 import sample.additions.Pair;
 
@@ -26,7 +27,7 @@ public class Server extends Thread {
     public Server(Main main, int port, String ipAddress) throws IOException {
 
         ss = new ServerSocket(port, 0, InetAddress.getByName(ipAddress));
-        ss.setSoTimeout(5000);
+        ss.setSoTimeout(0);
 
         this.main = main;
 
@@ -55,7 +56,10 @@ public class Server extends Thread {
                 String line = in.readUTF();
                 analise(line, out);
 
-            } catch (Exception x) { break; }
+            } catch (Exception ignored) {
+                ignored.printStackTrace();
+                break;
+            }
         }
     }
 
@@ -110,11 +114,13 @@ public class Server extends Thread {
 
                         out.writeUTF(clients.get(clients.size() - 1).getCode());
 
-                        if (Objects.equals(clients.get(clients.size() - 1).getCode(),
-                                CODE_ERROR_AUTHORIZATION) ||
-                                (Objects.equals(clients.get(clients.size() - 1).getCode(),
-                                        CODE_ERROR_REGISTRATION)))
+                        if (checkOnErrors())
                             clients.remove(clients.get(clients.size() - 1));
+                        else if (checkOnSuccess(login)) {
+                            String finalLogin = login;
+                            Platform.runLater(() -> main.connectInfo(finalLogin,
+                                    Objects.equals(clients.get(clients.size() - 1).getCode(), CODE_REGISTRATION)));
+                        }
                     } else
                         out.writeUTF((Objects.equals(message.getCode(), CODE_AUTHORIZATION)) ?
                                 CODE_ERROR_AUTHORIZATION :
@@ -126,14 +132,35 @@ public class Server extends Thread {
                 }
 
                 case CODE_DISCONNECTED: {
-                    String finalLogin = login;
 
-                    clients.stream().filter(client -> Objects.equals(client.getLogin(), finalLogin)).
-                            forEach(client -> clients.remove(client));
+                    for (Client i: clients)
+                        if (Objects.equals(i.getLogin(), login)) {
+                            clients.remove(i);
+                            break;
+                        }
+
+                    String finalLogin1 = login;
+                    Platform.runLater(() -> main.disconnectInfo(finalLogin1));
+
+                    out.writeUTF(CODE_SUCCESS);
+                    out.flush();
 
                     break;
                 }
             }
         }
+    }
+
+    private boolean checkOnErrors() {
+
+        return Objects.equals(clients.get(clients.size() - 1).getCode(),
+                CODE_ERROR_AUTHORIZATION) ||
+                (Objects.equals(clients.get(clients.size() - 1).getCode(),
+                        CODE_ERROR_REGISTRATION));
+    }
+
+    private boolean checkOnSuccess(String login) {
+        return (Objects.equals(clients.get(clients.size() - 1).getLogin(), login)) &&
+                Objects.equals(clients.get(clients.size() - 1).getCode(), CODE_CONNECTED);
     }
 }
