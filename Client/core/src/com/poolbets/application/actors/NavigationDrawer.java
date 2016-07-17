@@ -1,19 +1,25 @@
 package com.poolbets.application.actors;
 
-import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.poolbets.application.PoolBetsApp;
 import com.poolbets.application.additions.Utils.TextureData;
 
 import static com.poolbets.application.additions.Utils.getImageTextButton;
@@ -30,7 +36,6 @@ public class NavigationDrawer extends Table {
     private Button closeButton;
 
     private TextureData buttonStyle;
-    private Brand brand;
 
     private boolean[] flag = new boolean[]{false, false};
     private float flingSpeed = 1000;
@@ -38,7 +43,7 @@ public class NavigationDrawer extends Table {
     private float positionX;
     private float dx;
 
-    public NavigationDrawer(AssetManager manager, float width, float height) {
+    public NavigationDrawer(final PoolBetsApp app, float width, float height) {
 
         backgroundPixmap = setPixmapColor(1, 1, "#2f2c30");
         backgroundTexture = new TextureRegionDrawable(new TextureRegion(
@@ -46,12 +51,10 @@ public class NavigationDrawer extends Table {
 
         buttonStyle = getImageTextButton(
                 1, 1,
-                "#61656e", "#e9e8e6",
-                "#fbfbf9", "#2f2c30",
-                manager.get("DINPro_60_bac0ce.ttf", BitmapFont.class)
+                "#2f2c30", "#61656e",
+                "#fbfbf9", "#fbfbf9",
+                app.getManager().get("DINPro_60_bac0ce.ttf", BitmapFont.class)
         );
-
-        brand = new Brand(manager, width * 3 / 4f, height * 2 / 5f);
 
         this.width = width * 3 / 4f;
         this.height = height;
@@ -61,7 +64,7 @@ public class NavigationDrawer extends Table {
         menuTable = new Table();
         menuTable.align(Align.top);
         menuTable.setBackground(backgroundTexture);
-        addElementsOnTableMenu();
+        addElementsOnTableMenu(app);
 
         closeButton = new Button(new Button.ButtonStyle(null, null, null));
 
@@ -138,18 +141,53 @@ public class NavigationDrawer extends Table {
                 });
     }
 
-    private void addElementsOnTableMenu() {
+    private void addElementsOnTableMenu(final PoolBetsApp app) {
 
         Array<ImageTextButton> buttons = new Array<ImageTextButton>();
 
         buttons.add(new ImageTextButton("LINE", buttonStyle.style));
         buttons.add(new ImageTextButton("TOTO", buttonStyle.style));
-        buttons.add(new ImageTextButton("TWO-WAY BET", buttonStyle.style));
+        buttons.add(new ImageTextButton("HELP", buttonStyle.style));
+        buttons.add(new ImageTextButton("EXIT", buttonStyle.style));
 
-        menuTable.add(brand).width(width).height(height * 2 / 5f).row();
-        menuTable.add(buttons.get(0)).width(width).height(height / 5f).row();
-        menuTable.add(buttons.get(1)).width(width).height(height / 5f).row();
-        menuTable.add(buttons.get(2)).width(width).height(height / 5f).row();
+        for (ImageTextButton i : buttons)
+            i.align(Align.left).padLeft(50);
+
+        buttons.get(3).addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                Gdx.app.exit();
+            }
+        });
+
+        Label client = new Label("", new Label.LabelStyle(
+                app.getManager().get("PFSSP_60_bac0ce.ttf", BitmapFont.class),
+                Color.valueOf("#fbfbf9")));
+        client.setText("Login: " + app.getClient().getLogin() + "\n" +
+                "ID: " + app.getClient().getID());
+        client.setAlignment(Align.center);
+
+        Label copyright = new Label("", new Label.LabelStyle(
+                app.getManager().get("PFSSP_30_bac0ce.ttf", BitmapFont.class),
+                Color.valueOf("#fbfbf9")));
+        copyright.setText("2016, PoolBets Application, ver. " + app.getVersion());
+        copyright.setAlignment(Align.right);
+
+        Image collision = new Image(backgroundTexture);
+
+        menuTable.add(client).width(width).height(height * 3 / 10f).expand().row();
+        menuTable.add(buttons.get(0)).width(width - 30).height(height / 8f).
+                center().row();
+        menuTable.add(buttons.get(1)).width(width - 30).height(height / 8f).
+                center().row();
+        menuTable.add(collision).width(width).height(height / 8f).
+                center().expand().row();
+        menuTable.add(buttons.get(2)).width(width - 30).height(height / 8f).
+                center().row();
+        menuTable.add(buttons.get(3)).width(width - 30).height(height / 8f).
+                center().row();
+        menuTable.add(copyright).width(width - 30).height(height / 20f).
+                center().row();
     }
 
     public Button getCloseButton() {

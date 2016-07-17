@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.poolbets.application.models.Client;
 import com.poolbets.application.screens.LoadingScreen;
 
+import static com.poolbets.application.additions.Codes.CODE_CONNECTED;
 import static com.poolbets.application.additions.Utils.getFontParameters;
 
 /**
@@ -20,6 +21,10 @@ public class PoolBetsApp extends Game {
 
 	private AssetManager manager;
 	private Client client = null;
+
+	public String getVersion() {
+		return "1.0.1";
+	}
 
 	public AssetManager getManager() {
 		return manager;
@@ -91,5 +96,15 @@ public class PoolBetsApp extends Game {
 
 		super.dispose();
 		manager.dispose();
+
+		if (client.getCode().equals(CODE_CONNECTED)) {
+			Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					client.disconnect();
+				}
+			});
+			thread.start();
+		}
 	}
 }

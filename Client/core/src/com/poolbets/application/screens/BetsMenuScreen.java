@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
@@ -17,7 +18,6 @@ import com.badlogic.gdx.utils.Array;
 import com.poolbets.application.PoolBetsApp;
 import com.poolbets.application.additions.Utils.TextureData;
 
-import static com.poolbets.application.additions.Codes.CODE_SUCCESS;
 import static com.poolbets.application.additions.Utils.getImageTextButton;
 import static com.poolbets.application.additions.Utils.setPixmapColor;
 
@@ -54,11 +54,18 @@ public class BetsMenuScreen extends BaseScreen {
         header.getCashButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                app.getClient().disconnect();
-                if (app.getClient().getCode().equals(CODE_SUCCESS)) {
-                    dispose();
-                    app.setScreen(new AuthorizationScreen(app));
-                }
+
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        app.getClient().disconnect();
+                    }
+                });
+                thread.setDaemon(true);
+                thread.start();
+
+                dispose();
+                app.setScreen(new AuthorizationScreen(app));
             }
         });
     }

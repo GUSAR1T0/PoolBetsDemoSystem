@@ -185,6 +185,7 @@ public class AuthorizationScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
                 stage.setKeyboardFocus(null);
                 Gdx.input.setOnscreenKeyboardVisible(false);
+                menuTable.addAction(moveTo(0, 0, 0.2f));
 
                 messageLabel.setText("");
 
@@ -226,6 +227,7 @@ public class AuthorizationScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
                 stage.setKeyboardFocus(null);
                 Gdx.input.setOnscreenKeyboardVisible(false);
+                menuTable.addAction(moveTo(0, 0, 0.2f));
 
                 messageLabel.setText("");
 
