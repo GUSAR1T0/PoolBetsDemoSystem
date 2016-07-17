@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.poolbets.application.PoolBetsApp;
@@ -60,19 +61,19 @@ class BaseScreen implements Screen {
                 }
             }
         });
-        header.getCashButton().setText("63794\nCUB");
+        header.getCashButton().setText(app.getClient().getCash() + "\nCUB");
 
         stage.addActor(header);
     }
 
     private void createNavigationDrawerMenu() {
 
-        navigationDrawer = new NavigationDrawer(app.getManager(),
+        navigationDrawer = new NavigationDrawer(app,
                 stage.getWidth(), stage.getHeight());
         navigationDrawer.getCloseButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (!navigationDrawer.getFlag()[0] )
+                if (!navigationDrawer.getFlag()[0])
                     navigationDrawer.getFlag()[1] = true;
             }
         });
@@ -107,12 +108,12 @@ class BaseScreen implements Screen {
 
     @Override
     public void pause() {
-        app.getClient().disconnect();
+//        app.getClient().disconnect();
     }
 
     @Override
     public void resume() {
-        app.getClient().connect(CODE_AUTHORIZATION);
+//        app.getClient().restartConnection();
     }
 
     @Override

@@ -1,10 +1,13 @@
 package com.poolbets.application.models;
 
+import com.poolbets.application.additions.Pair;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import static com.poolbets.application.additions.Codes.*;
 
@@ -17,7 +20,9 @@ public class Client extends Thread {
     private String ipAddress = "95.37.138.89";
 
     private String login;
+    private String id;
     String password;
+    private String cash;
     private String code;
 
     public Client(String login, String password, String Code) {
@@ -28,12 +33,20 @@ public class Client extends Thread {
         connect(Code);
     }
 
-    public String getCode() {
-        return code;
+    public String getID() {
+        return id;
     }
 
     public String getLogin() {
         return login;
+    }
+
+    public String getCash() {
+        return cash;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     public void connect(String Code) {
@@ -46,12 +59,13 @@ public class Client extends Thread {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
 
-            out.writeUTF(CODE_LOGIN + Client.this.login + "|" +
-                    CODE_PASSWORD + Client.this.password + "|" +
+            out.writeUTF(CODE_LOGIN + this.login + "|" +
+                    CODE_PASSWORD + this.password + "|" +
                     Code + "|");
             out.flush();
 
-            code = in.readUTF();
+            String line = in.readUTF();
+            analise(line);
         } catch (Throwable throwable) {
             code = CODE_ERROR_CONNECTION;
         }
@@ -67,7 +81,7 @@ public class Client extends Thread {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
 
-            out.writeUTF(CODE_LOGIN + login + "|" +
+            out.writeUTF(CODE_ID + this.id + "|" +
                     CODE_DISCONNECTED + "|");
             out.flush();
 
@@ -75,5 +89,40 @@ public class Client extends Thread {
         } catch (Throwable throwable) {
             code = CODE_ERROR_CONNECTION;
         }
+    }
+
+    private void analise(String line) {
+
+        ArrayList<Pair<String, String>> messages = decoder(line);
+
+        for (Pair<String, String> message : messages) {
+
+            if (message.getCode().equals(CODE_CONNECTED) ||
+                    message.getCode().equals(CODE_ERROR_REGISTRATION) ||
+                    message.getCode().equals(CODE_ERROR_AUTHORIZATION))
+                code = message.getCode();
+            else if (message.getCode().equals(CODE_ID))
+                id = message.getValue();
+            else if (message.getCode().equals(CODE_CASH))
+                cash = message.getValue();
+        }
+    }
+
+    private ArrayList<Pair<String, String>> decoder(String inputLine) {
+
+        ArrayList<Pair<String, String>> messages = new ArrayList<Pair<String, String>>();
+
+        int j = 0;
+
+        for (int i = 0; i < inputLine.length(); i++) {
+
+            if (inputLine.charAt(i) != '|') continue;
+
+            messages.add(new Pair<String, String>(inputLine.substring(j, j + 3),
+                    ((inputLine.length() >= i + 1) ? inputLine.substring(j + 3, i) : "")));
+            j = i + 1;
+        }
+
+        return messages;
     }
 }
