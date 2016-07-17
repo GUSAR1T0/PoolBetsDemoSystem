@@ -6,6 +6,7 @@ import sample.additions.Pair;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -43,12 +44,11 @@ public class Server extends Thread {
     @Override
     public void run() {
 
-        Socket socket;
         clients = new ArrayList<>();
 
         while (true) {
             try {
-                socket = ss.accept();
+                Socket socket = ss.accept();
 
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -56,8 +56,10 @@ public class Server extends Thread {
                 String line = in.readUTF();
                 analise(line, out);
 
-            } catch (Exception ignored) {
-                ignored.printStackTrace();
+            } catch (EOFException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
                 break;
             }
         }
@@ -74,7 +76,7 @@ public class Server extends Thread {
             if (inputLine.charAt(i) != '|') continue;
 
             messages.add(new Pair<>(inputLine.substring(j, j + 3),
-                    ((inputLine.length() != i + 1) ? inputLine.substring(j + 3, i) : "")));
+                    ((inputLine.length() >= i + 1) ? inputLine.substring(j + 3, i) : "")));
             j = i + 1;
         }
 
@@ -83,12 +85,20 @@ public class Server extends Thread {
 
     private void analise(String line, DataOutputStream out) throws IOException {
 
-        String login = null, password = null;
+        String id = "", login = "", password = "";
         ArrayList<Pair<String, String>> messages = decoder(line);
 
         for (Pair<String, String> message : messages) {
 
             switch (message.getCode()) {
+
+                case CODE_ID: {
+                    id = message.getValue();
+                    login = Client.getLogin(id);
+                    password = Client.getPassword(id);
+
+                    break;
+                }
 
                 case CODE_LOGIN: {
                     login = message.getValue();
@@ -106,25 +116,29 @@ public class Server extends Thread {
                     for (Client client : clients)
                         if (Objects.equals(client.getLogin(), login)) {
                             flag = true;
+
+                            out.writeUTF(((Objects.equals(message.getCode(), CODE_AUTHORIZATION)) ?
+                                    CODE_ERROR_AUTHORIZATION :
+                                    CODE_ERROR_REGISTRATION) + "|");
+
                             break;
                         }
 
                     if (!flag) {
-                        clients.add(new Client(login, password, message.getCode()));
+                        clients.add(new Client(id, login, password, message.getCode()));
 
-                        out.writeUTF(clients.get(clients.size() - 1).getCode());
+                        out.writeUTF(clients.get(clients.size() - 1).getCode() + "|" +
+                                CODE_ID + clients.get(clients.size() - 1).getID() + "|" +
+                                CODE_CASH + clients.get(clients.size() - 1).getCash() + "|");
 
                         if (checkOnErrors())
                             clients.remove(clients.get(clients.size() - 1));
-                        else if (checkOnSuccess(login)) {
-                            String finalLogin = login;
-                            Platform.runLater(() -> main.connectInfo(finalLogin,
-                                    Objects.equals(clients.get(clients.size() - 1).getCode(), CODE_REGISTRATION)));
+                        else if (checkOnSuccess(clients.get(clients.size() - 1).getLogin())) {
+                            Platform.runLater(() -> main.connectInfo(clients.get(clients.size() - 1).getLogin(),
+                                    clients.get(clients.size() - 1).getID(),
+                                    Objects.equals(message.getCode(), CODE_REGISTRATION)));
                         }
-                    } else
-                        out.writeUTF((Objects.equals(message.getCode(), CODE_AUTHORIZATION)) ?
-                                CODE_ERROR_AUTHORIZATION :
-                                CODE_ERROR_REGISTRATION);
+                    }
 
                     out.flush();
 
@@ -133,17 +147,20 @@ public class Server extends Thread {
 
                 case CODE_DISCONNECTED: {
 
-                    for (Client i: clients)
-                        if (Objects.equals(i.getLogin(), login)) {
+                    for (Client i : clients) {
+                        if (Objects.equals(i.getID(), id)) {
                             clients.remove(i);
+
+                            String finalLogin1 = login;
+                            String finalId1 = id;
+                            Platform.runLater(() -> main.disconnectInfo(finalLogin1, finalId1));
+
+                            out.writeUTF(CODE_SUCCESS);
+                            out.flush();
+
                             break;
                         }
-
-                    String finalLogin1 = login;
-                    Platform.runLater(() -> main.disconnectInfo(finalLogin1));
-
-                    out.writeUTF(CODE_SUCCESS);
-                    out.flush();
+                    }
 
                     break;
                 }
@@ -160,6 +177,7 @@ public class Server extends Thread {
     }
 
     private boolean checkOnSuccess(String login) {
+
         return (Objects.equals(clients.get(clients.size() - 1).getLogin(), login)) &&
                 Objects.equals(clients.get(clients.size() - 1).getCode(), CODE_CONNECTED);
     }

@@ -5,8 +5,10 @@ package sample.additions;
  */
 public class Codes {
 
-    public static final String CODE_LOGIN = "000";
-    public static final String CODE_PASSWORD = "001";
+    public static final String CODE_ID = "000";
+    public static final String CODE_LOGIN = "001";
+    public static final String CODE_PASSWORD = "002";
+    public static final String CODE_CASH = "003";
 
     public static final String CODE_AUTHORIZATION = "100";
     public static final String CODE_REGISTRATION = "101";

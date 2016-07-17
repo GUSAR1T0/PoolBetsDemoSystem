@@ -80,7 +80,7 @@ public class Main extends Application {
 
         Label ipLabel = new Label("IP Address:");
         TextField ipTextField = new TextField();
-        ipTextField.setText((textLabel.charAt(0) == 'M') ? "127.0.0.1" : "192.168.1.207");
+        ipTextField.setText((textLabel.charAt(0) == 'M') ? "127.0.0.1" : "192.168.1.100");
 
         Label portLabel = new Label("Port:");
         TextField portTextField = new TextField();
@@ -150,6 +150,7 @@ public class Main extends Application {
             else {
                 try {
                     server.stopServer();
+                    clearOnlineList();
 
                     launchButton.setText((textLabel.charAt(0) == 'M') ? "Connect" : "Launch");
 
@@ -207,33 +208,10 @@ public class Main extends Application {
         return false;
     }
 
-    public void connectInfo(String login, boolean registration) {
+    public void connectInfo(String login, String id, boolean registration) {
 
-        ListView<String> messagesList = this.messagesList;
-        ListView<String> onlineList = this.onlineList;
-
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
-        String time = LocalTime.now().format(formatter).substring(0, 8);
-
-        ObservableList<String> items = messagesList.getItems();
-
-        if (registration)
-            items.addAll(FXCollections.observableArrayList("[" + time + "] " +
-                    login + " registered on PoolBets Server"));
-        else
-            items.addAll(FXCollections.observableArrayList("[" + time + "] " +
-                    login + " connected to PoolBets Server"));
-        messagesList.setItems(items);
-
-        items = onlineList.getItems();
-        items.addAll(FXCollections.observableArrayList(login));
-        onlineList.setItems(items);
-    }
-
-    public void disconnectInfo(String login) {
-
-        ListView<String> messagesList = this.messagesList;
-        ListView<String> onlineList = this.onlineList;
+        for (String i : onlineList.getItems())
+            if (i.equals(login)) return;
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
         String time = LocalTime.now().format(formatter).substring(0, 8);
@@ -241,11 +219,45 @@ public class Main extends Application {
         ObservableList<String> items = messagesList.getItems();
 
         items.addAll(FXCollections.observableArrayList("[" + time + "] " +
-                login + " disconnected from PoolBets Server"));
+                login + " (ID: " + id +  ") " +
+                (registration ? "registered on" : "connected to") + " PoolBets Server"));
+
         messagesList.setItems(items);
 
         items = onlineList.getItems();
-        items.remove(login);
+        items.addAll(FXCollections.observableArrayList(login));
+        onlineList.setItems(items);
+    }
+
+    public void disconnectInfo(String login, String id) {
+
+        boolean flag = false;
+
+        for (int i = 0; i < onlineList.getItems().size(); i++) {
+            if (onlineList.getItems().get(i).equals(login)) break;
+            if (i == onlineList.getItems().size() - 1) flag = true;
+        }
+
+        if (!flag) {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
+            String time = LocalTime.now().format(formatter).substring(0, 8);
+
+            ObservableList<String> items = messagesList.getItems();
+
+            items.addAll(FXCollections.observableArrayList("[" + time + "] " +
+                    login + " (ID: " + id + ") disconnected from PoolBets Server"));
+            messagesList.setItems(items);
+
+            items = onlineList.getItems();
+            items.remove(login);
+            onlineList.setItems(items);
+        }
+    }
+
+    private void clearOnlineList() {
+
+        ObservableList<String> items = onlineList.getItems();
+        items.remove(0, items.size());
         onlineList.setItems(items);
     }
 
