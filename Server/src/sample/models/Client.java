@@ -31,7 +31,7 @@ class Client {
             if (authorization()) {
                 this.code = CODE_CONNECTED;
                 if (Objects.equals(this.id, ""))
-                    this.id = "0";
+                    this.id = "1";
                 this.cash = "63794";
             }
             else {
@@ -44,7 +44,7 @@ class Client {
             if (registration()) {
                 this.code = CODE_CONNECTED;
                 if (Objects.equals(this.id, ""))
-                    this.id = "1";
+                    this.id = "2";
                 this.cash = "0";
             }
             else {
@@ -76,9 +76,9 @@ class Client {
 
         String login = "";
 
-        if (Objects.equals(id, "0"))
-            login = "GUSARITO";
         if (Objects.equals(id, "1"))
+            login = "GUSARITO";
+        if (Objects.equals(id, "2"))
             login = "GUSARITO1";
 
         return login;
@@ -88,9 +88,9 @@ class Client {
 
         String password = "";
 
-        if (Objects.equals(id, "0"))
-            password = "123";
         if (Objects.equals(id, "1"))
+            password = "123";
+        if (Objects.equals(id, "2"))
             password = "123";
 
         return password;

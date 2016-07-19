@@ -14,9 +14,12 @@ public class Codes {
     public static final String CODE_REGISTRATION = "101";
     public static final String CODE_ERROR_AUTHORIZATION = "150";
     public static final String CODE_ERROR_REGISTRATION = "151";
+    public static final String CODE_EDITOR_ERROR_AUTHORIZATION = "152";
 
     public static final String CODE_CONNECTED = "200";
     public static final String CODE_DISCONNECTED = "201";
+    public static final String CODE_EDITOR_CONNECTED = "202";
+    public static final String CODE_EDITOR_DISCONNECTED = "203";
 
     public static final String CODE_SUCCESS = "300";
 }

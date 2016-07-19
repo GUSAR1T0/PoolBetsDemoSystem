@@ -93,9 +93,33 @@ public class Server extends Thread {
             switch (message.getCode()) {
 
                 case CODE_ID: {
-                    id = message.getValue();
-                    login = Client.getLogin(id);
-                    password = Client.getPassword(id);
+
+                    if (!message.getValue().equals("0")) {
+                        id = message.getValue();
+                        login = Client.getLogin(id);
+                        password = Client.getPassword(id);
+                    } else {
+                        boolean flag = false;
+
+                        for (Client client : clients)
+                            if (Objects.equals(client.getLogin(), login)) {
+                                flag = true;
+
+                                out.writeUTF(CODE_EDITOR_ERROR_AUTHORIZATION + "|");
+
+                                break;
+                            }
+
+                        if (!flag) {
+                            clients.add(new Client("0", "PoolBets Database Editor", "", CODE_EDITOR_CONNECTED));
+
+                            Platform.runLater(() -> main.connectInfo(clients.get(clients.size() - 1).getLogin(),
+                                        clients.get(clients.size() - 1).getID(), false));
+                            out.writeUTF(CODE_EDITOR_CONNECTED + "|");
+                        }
+
+                        out.flush();
+                    }
 
                     break;
                 }
@@ -154,7 +178,23 @@ public class Server extends Thread {
                             String finalLogin1 = login;
                             String finalId1 = id;
                             Platform.runLater(() -> main.disconnectInfo(finalLogin1, finalId1));
+                            out.writeUTF(CODE_SUCCESS);
+                            out.flush();
 
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+
+                case CODE_EDITOR_DISCONNECTED: {
+
+                    for (Client i : clients) {
+                        if (Objects.equals(i.getID(), "0")) {
+                            clients.remove(i);
+
+                            Platform.runLater(() -> main.disconnectInfo("PoolBets Database Editor", "0"));
                             out.writeUTF(CODE_SUCCESS);
                             out.flush();
 

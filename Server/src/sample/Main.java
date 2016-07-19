@@ -45,7 +45,7 @@ public class Main extends Application {
         else
             label.setText("Messages:");
 
-        list.setPrefHeight(475);
+        list.setPrefHeight(460);
         list.getItems().addListener(new ListChangeListener<String>(){
             @Override
             public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c) {
@@ -93,6 +93,7 @@ public class Main extends Application {
         HBox box = new HBox(serverLabel, ipLabel, ipTextField, portLabel, portTextField, launchButton);
         box.setSpacing(10);
         box.setPadding(new Insets(10));
+		box.setAlignment(Pos.CENTER);
 
         HBox.setHgrow(ipLabel, Priority.ALWAYS);
         HBox.setHgrow(ipTextField, Priority.ALWAYS);
