@@ -1,5 +1,7 @@
 package sample.models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Objects;
 
 import static sample.additions.Codes.*;
@@ -9,14 +11,16 @@ import static sample.additions.Codes.*;
  */
 class Client {
 
+    private MySQLServer sql;
     private String id;
     private String login;
     private String password;
     private String cash;
     private String code;
 
-    Client(String id, String login, String password, String code) {
+    Client(MySQLServer sql, String id, String login, String password, String code) {
 
+        this.sql = sql;
         this.id = id;
         this.login = login;
         this.password = password;
@@ -29,39 +33,71 @@ class Client {
 
         if (Objects.equals(this.code, CODE_AUTHORIZATION)) {
             if (authorization()) {
-                this.code = CODE_CONNECTED;
-                if (Objects.equals(this.id, ""))
-                    this.id = "1";
-                this.cash = "63794";
+                code = CODE_CONNECTED;
             }
             else {
-                this.code = CODE_ERROR_AUTHORIZATION;
-                this.id = "";
-                this.cash = "";
+                code = CODE_ERROR_AUTHORIZATION;
+                id = "";
+                cash = "";
             }
         }
         if (Objects.equals(this.code, CODE_REGISTRATION)) {
             if (registration()) {
-                this.code = CODE_CONNECTED;
-                if (Objects.equals(this.id, ""))
-                    this.id = "2";
-                this.cash = "0";
+                code = CODE_CONNECTED;
             }
             else {
-                this.code = CODE_ERROR_REGISTRATION;
-                this.id = "";
-                this.cash = "";
+                code = CODE_ERROR_REGISTRATION;
+                id = "";
+                cash = "";
             }
         }
     }
 
     private boolean authorization() {
-        return ((login.equals("GUSARITO") && password.equals("123")) ||
-                (login.equals("GUSARITO1") && password.equals("123")));
+
+        try {
+            ResultSet res = sql.getStatement().executeQuery("SELECT * FROM persons");
+
+            while (res.next()) {
+                if (login.equals(res.getString(2)))
+                    if (password.equals(res.getString(3))) {
+                        id = res.getInt(1) + "";
+                        cash = res.getInt(4) + "";
+                        return true;
+                    }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     private boolean registration() {
-        return !login.equals("Vasya");
+        try {
+            ResultSet res = sql.getStatement().executeQuery("SELECT * FROM persons");
+
+            while (res.next()) {
+                if (login.equals(res.getString(2)))
+                        return false;
+            }
+
+            String query = "INSERT INTO persons (login, password, cash) VALUES (?, ?, ?)";
+            sql.setPreparedStatement(sql.getConnection().prepareStatement(query));
+            sql.getPreparedStatement().setString(1, login);
+            sql.getPreparedStatement().setString(2, password);
+            sql.getPreparedStatement().setInt(3, 0);
+
+            sql.getPreparedStatement().execute();
+
+            res = sql.getStatement().executeQuery("SELECT * FROM persons WHERE id=LAST_INSERT_ID();");
+            if (res.next()) id = res.getInt(1) + "";
+            cash = "0";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 
     String getID() {
@@ -72,26 +108,38 @@ class Client {
         return login;
     }
 
-    static String getLogin(String id) {
+    static String getLogin(MySQLServer sql, String id) {
 
         String login = "";
 
-        if (Objects.equals(id, "1"))
-            login = "GUSARITO";
-        if (Objects.equals(id, "2"))
-            login = "GUSARITO1";
+        try {
+            ResultSet res = sql.getStatement().executeQuery("SELECT * FROM persons");
+
+            for (int i = 0; i < Integer.parseInt(id); i++) {
+                if (res.next())
+                    login = res.getString(2);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         return login;
     }
 
-    static String getPassword(String id) {
+    static String getPassword(MySQLServer sql, String id) {
 
         String password = "";
 
-        if (Objects.equals(id, "1"))
-            password = "123";
-        if (Objects.equals(id, "2"))
-            password = "123";
+        try {
+            ResultSet res = sql.getStatement().executeQuery("SELECT * FROM persons");
+
+            for (int i = 0; i < Integer.parseInt(id); i++) {
+                if (res.next())
+                    password = res.getString(3);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         return password;
     }

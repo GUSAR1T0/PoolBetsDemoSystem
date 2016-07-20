@@ -16,8 +16,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import sample.models.MySQLServer;
 import sample.models.Server;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
@@ -27,6 +30,7 @@ public class Main extends Application {
 
     private ListView<String> onlineList, messagesList;
     private Server server = null;
+    private MySQLServer sql = null;
     private int port;
 
     private static final String IPADDRESS_PATTERN =
@@ -105,22 +109,46 @@ public class Main extends Application {
             if (launchButton.getText().equals("Launch") || launchButton.getText().equals("Connect")) {
                 if (validateIP(ipTextField.getText()) && (validatePort(portTextField.getText()))) {
                     try {
-                        server = new Server(Main.this, port, ipTextField.getText());
+                        if (textLabel.charAt(0) == 'M') {
+                            sql = new MySQLServer(ipTextField.getText(), port);
 
-                        launchButton.setText((textLabel.charAt(0) == 'M') ? "Disconnect" : "Stop");
+                            launchButton.setText((textLabel.charAt(0) == 'M') ? "Disconnect" : "Stop");
 
-                        DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
-                        String time = LocalTime.now().format(formatter).substring(0, 8);
+                            DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
+                            String time = LocalTime.now().format(formatter).substring(0, 8);
 
-                        ObservableList<String> items = messagesList.getItems();
-                        items.addAll(FXCollections.observableArrayList("[" + time + "] " +
-                                textLabel +
-                                " (" + ipTextField.getText() + ":" + portTextField.getText() + ") " +
-                                "was " + ((textLabel.charAt(0) == 'M') ? "connected" : "launched")));
-                        messagesList.setItems(items);
+                            ObservableList<String> items = messagesList.getItems();
+                            items.addAll(FXCollections.observableArrayList("[" + time + "] " +
+                                    textLabel +
+                                    " (" + ipTextField.getText() + ":" + portTextField.getText() + ") " +
+                                    "was " + ((textLabel.charAt(0) == 'M') ? "connected" : "launched")));
+                            messagesList.setItems(items);
 
-                        ipTextField.setDisable(true);
-                        portTextField.setDisable(true);
+                            ipTextField.setDisable(true);
+                            portTextField.setDisable(true);
+                        }
+                        else {
+                            if (sql != null) {
+                                if (!sql.getConnection().isClosed()) {
+                                    server = new Server(Main.this, sql, port, ipTextField.getText());
+
+                                    launchButton.setText((textLabel.charAt(0) == 'M') ? "Disconnect" : "Stop");
+
+                                    DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
+                                    String time = LocalTime.now().format(formatter).substring(0, 8);
+
+                                    ObservableList<String> items = messagesList.getItems();
+                                    items.addAll(FXCollections.observableArrayList("[" + time + "] " +
+                                            textLabel +
+                                            " (" + ipTextField.getText() + ":" + portTextField.getText() + ") " +
+                                            "was " + ((textLabel.charAt(0) == 'M') ? "connected" : "launched")));
+                                    messagesList.setItems(items);
+
+                                    ipTextField.setDisable(true);
+                                    portTextField.setDisable(true);
+                                } else launchButton.setSelected(false);
+                            } else launchButton.setSelected(false);
+                        }
                     } catch (Throwable throwable) {
                         DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
                         String time = LocalTime.now().format(formatter).substring(0, 8);
@@ -150,23 +178,46 @@ public class Main extends Application {
             }
             else {
                 try {
-                    server.stopServer();
-                    clearOnlineList();
+                    if (textLabel.charAt(0) == 'M') {
+                        if (server.getServerSocket().isClosed()) {
+                            sql.stopConnection();
 
-                    launchButton.setText((textLabel.charAt(0) == 'M') ? "Connect" : "Launch");
+                            launchButton.setText((textLabel.charAt(0) == 'M') ? "Connect" : "Launch");
 
-                    DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
-                    String time = LocalTime.now().format(formatter).substring(0, 8);
+                            DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
+                            String time = LocalTime.now().format(formatter).substring(0, 8);
 
-                    ObservableList<String> items = messagesList.getItems();
-                    items.addAll(FXCollections.observableArrayList("[" + time + "] " +
-                            textLabel +
-                            " (" + ipTextField.getText() + ":" + portTextField.getText() + ") " +
-                            "was " + ((textLabel.charAt(0) == 'M') ? "disconnected" : "stopped")));
-                    messagesList.setItems(items);
+                            ObservableList<String> items = messagesList.getItems();
+                            items.addAll(FXCollections.observableArrayList("[" + time + "] " +
+                                    textLabel +
+                                    " (" + ipTextField.getText() + ":" + portTextField.getText() + ") " +
+                                    "was " + ((textLabel.charAt(0) == 'M') ? "disconnected" : "stopped")));
+                            messagesList.setItems(items);
 
-                    ipTextField.setDisable(false);
-                    portTextField.setDisable(false);
+                            ipTextField.setDisable(false);
+                            portTextField.setDisable(false);
+                        }
+                        else launchButton.setSelected(true);
+                    }
+                    else {
+                        server.stopServer();
+                        clearOnlineList();
+
+                        launchButton.setText((textLabel.charAt(0) == 'M') ? "Connect" : "Launch");
+
+                        DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
+                        String time = LocalTime.now().format(formatter).substring(0, 8);
+
+                        ObservableList<String> items = messagesList.getItems();
+                        items.addAll(FXCollections.observableArrayList("[" + time + "] " +
+                                textLabel +
+                                " (" + ipTextField.getText() + ":" + portTextField.getText() + ") " +
+                                "was " + ((textLabel.charAt(0) == 'M') ? "disconnected" : "stopped")));
+                        messagesList.setItems(items);
+
+                        ipTextField.setDisable(false);
+                        portTextField.setDisable(false);
+                    }
                 } catch (Throwable throwable) {
                     DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
                     String time = LocalTime.now().format(formatter).substring(0, 8);
@@ -283,6 +334,18 @@ public class Main extends Application {
         primaryStage.setResizable(false);
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.show();
+
+        primaryStage.setOnCloseRequest(event -> {
+            if (sql != null)
+                try {
+                    if (!sql.getConnection().isClosed()) sql.stopConnection();
+                } catch (SQLException ignored) {}
+
+            if (server != null)
+                try {
+                    if (!server.getServerSocket().isClosed()) server.stopServer();
+                } catch (IOException ignored) {}
+        });
     }
 
     public static void main(String[] args) {

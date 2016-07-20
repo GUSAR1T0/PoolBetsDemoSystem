@@ -22,15 +22,17 @@ import static sample.additions.Codes.*;
 public class Server extends Thread {
 
     private Main main;
+    private MySQLServer sql;
     private ServerSocket ss;
     private ArrayList<Client> clients;
 
-    public Server(Main main, int port, String ipAddress) throws IOException {
+    public Server(Main main, MySQLServer sql, int port, String ipAddress) throws IOException {
 
         ss = new ServerSocket(port, 0, InetAddress.getByName(ipAddress));
         ss.setSoTimeout(0);
 
         this.main = main;
+        this.sql = sql;
 
         setDaemon(true);
         setPriority(NORM_PRIORITY);
@@ -39,6 +41,10 @@ public class Server extends Thread {
 
     public void stopServer() throws IOException {
         ss.close();
+    }
+
+    public ServerSocket getServerSocket() {
+        return ss;
     }
 
     @Override
@@ -54,7 +60,7 @@ public class Server extends Thread {
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
                 String line = in.readUTF();
-                analise(line, out);
+                analise(line, out, in);
 
             } catch (EOFException e) {
                 e.printStackTrace();
@@ -83,7 +89,7 @@ public class Server extends Thread {
         return messages;
     }
 
-    private void analise(String line, DataOutputStream out) throws IOException {
+    private void analise(String line, DataOutputStream out, DataInputStream in) throws IOException {
 
         String id = "", login = "", password = "";
         ArrayList<Pair<String, String>> messages = decoder(line);
@@ -96,8 +102,8 @@ public class Server extends Thread {
 
                     if (!message.getValue().equals("0")) {
                         id = message.getValue();
-                        login = Client.getLogin(id);
-                        password = Client.getPassword(id);
+                        login = Client.getLogin(sql, id);
+                        password = Client.getPassword(sql, id);
                     } else {
                         boolean flag = false;
 
@@ -111,7 +117,7 @@ public class Server extends Thread {
                             }
 
                         if (!flag) {
-                            clients.add(new Client("0", "PoolBets Database Editor", "", CODE_EDITOR_CONNECTED));
+                            clients.add(new Client(sql, "0", "PoolBets Database Editor", "", CODE_EDITOR_CONNECTED));
 
                             Platform.runLater(() -> main.connectInfo(clients.get(clients.size() - 1).getLogin(),
                                         clients.get(clients.size() - 1).getID(), false));
@@ -149,7 +155,7 @@ public class Server extends Thread {
                         }
 
                     if (!flag) {
-                        clients.add(new Client(id, login, password, message.getCode()));
+                        clients.add(new Client(sql, id, login, password, message.getCode()));
 
                         out.writeUTF(clients.get(clients.size() - 1).getCode() + "|" +
                                 CODE_ID + clients.get(clients.size() - 1).getID() + "|" +
@@ -173,10 +179,10 @@ public class Server extends Thread {
 
                     for (Client i : clients) {
                         if (Objects.equals(i.getID(), id)) {
-                            clients.remove(i);
-
-                            String finalLogin1 = login;
+                            String finalLogin1 = i.getLogin();
                             String finalId1 = id;
+
+                            clients.remove(i);
                             Platform.runLater(() -> main.disconnectInfo(finalLogin1, finalId1));
                             out.writeUTF(CODE_SUCCESS);
                             out.flush();
@@ -201,6 +207,126 @@ public class Server extends Thread {
                             break;
                         }
                     }
+
+                    break;
+                }
+
+                case SQL_GET_SEASONS: {
+
+                    ArrayList<String> seasons = sql.getSeasons();
+
+                    out.writeInt(seasons.size());
+
+                    for (String i : seasons)
+                        out.writeUTF(i);
+
+                    out.flush();
+
+                    break;
+                }
+
+                case SQL_GET_LEAGUES: {
+
+                    ArrayList<String> leagues = sql.getLeagues();
+
+                    out.writeInt(leagues.size());
+
+                    for (String i : leagues)
+                        out.writeUTF(i);
+
+                    out.flush();
+
+                    break;
+                }
+
+                case SQL_GET_TEAMS: {
+
+                    ArrayList<Pair<Integer, String>> teams = sql.getTeams();
+
+                    out.writeInt(teams.size());
+
+                    for (Pair<Integer, String> i : teams) {
+                        out.writeUTF(i.getCode() + "");
+                        out.writeUTF(i.getValue());
+                    }
+
+                    out.flush();
+
+                    break;
+                }
+
+                case SQL_GET_BETS_HISTORY: {
+
+                    ArrayList<BetsHistory> betsHistory = sql.getBetsHistory();
+
+                    out.writeInt(betsHistory.size());
+
+                    for (BetsHistory i : betsHistory) {
+                        out.writeUTF(i.getPersonID() + "");
+                        out.writeUTF(i.getEventID() + "");
+                        out.writeUTF(i.getChosenResult() + "");
+                        out.writeUTF(i.getPayments());
+                        out.writeUTF(i.isPaid() + "");
+                    }
+
+                    out.flush();
+
+                    break;
+                }
+
+                case SQL_GET_EVENTS: {
+
+                    ArrayList<Bet> events = sql.getEvents();
+
+                    out.writeInt(events.size());
+
+                    for (Bet i : events) {
+                        out.writeUTF(i.getLeague());
+                        out.writeUTF(i.getSeason());
+                        out.writeUTF(i.getFirstTeam());
+                        out.writeUTF(i.getSecondTeam());
+                        out.writeUTF(i.getWinFirstTeam());
+                        out.writeUTF(i.getDraw());
+                        out.writeUTF(i.getWinSecondTeam());
+                        out.writeUTF(i.getResult());
+                    }
+
+                    out.flush();
+
+                    break;
+                }
+
+                case SQL_ADD_EVENT: {
+
+                    int league = in.readInt();
+                    int season = in.readInt();
+                    int firstTeam = in.readInt();
+                    int secondTeam = in.readInt();
+                    String winFirstTeam = in.readUTF();
+                    String draw = in.readUTF();
+                    String winSecondTeam = in.readUTF();
+                    String result = in.readUTF();
+
+                    sql.sendOnMySQLServerNewEvent(league, season, firstTeam, secondTeam,
+                            winFirstTeam, draw, winSecondTeam, result);
+
+                    break;
+                }
+
+                case SQL_UPDATED_EVENT: {
+
+                    int index = in.readInt();
+                    int season = in.readInt();
+                    int league = in.readInt();
+                    int firstTeam = in.readInt();
+                    int secondTeam = in.readInt();
+                    String winFirstTeam = in.readUTF();
+                    String draw = in.readUTF();
+                    String winSecondTeam = in.readUTF();
+                    String result = in.readUTF();
+
+                    sql.sendOnMySQLServerUpdatedEvent(index, league, season, firstTeam, secondTeam,
+                            winFirstTeam, draw, winSecondTeam, result);
 
                     break;
                 }
