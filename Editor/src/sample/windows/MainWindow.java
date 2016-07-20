@@ -47,13 +47,15 @@ public class MainWindow {
         addButton = new Button("Add");
         addButton.setPrefWidth(100);
         addButton.setDisable(true);
-        addButton.setOnMouseClicked(event -> new EditorWindow(this, null));
+        addButton.setOnMouseClicked(event -> new EditorWindow(this, null, betsTable.getItems().size()));
 
         editButton = new Button("Edit");
         editButton.setPrefWidth(100);
         editButton.setDisable(true);
         editButton.setOnMouseClicked(event -> {
-            if (bets.size() > 0) new EditorWindow(this, betsTable.getFocusModel().getFocusedItem());
+            if (bets.size() > 0)
+                new EditorWindow(this, betsTable.getFocusModel().getFocusedItem(),
+                        betsTable.getFocusModel().getFocusedIndex() + 1);
         });
 
         removeButton = new Button("Remove");
@@ -146,7 +148,14 @@ public class MainWindow {
     }
 
     void updateBetObservableList(Bet bet) {
+
         bets.add(bet);
+        client.sendNewBetOnMySQLServerEvent(bet);
+    }
+
+    void updateBetOnMySQLServer(Bet bet, int index) {
+
+        client.sendUpdatedBetOnMySQLServerEvent(bet, index);
     }
 
     boolean check(String league, String season, String firstTeam, String secondTeam) {
@@ -195,6 +204,9 @@ public class MainWindow {
                 if (validateIP(ipTextField.getText()) && (validatePort(portTextField.getText()))) {
                     try {
                         client = new Client(ipTextField.getText(), port, CODE_EDITOR_AUTHORIZATION);
+
+                        client.setEvents();
+                        bets.setAll(client.getEvents());
 
                         if (client.getCode().equals(CODE_EDITOR_CONNECTED)) {
                             launchButton.setText("Stop");

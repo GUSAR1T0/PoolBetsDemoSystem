@@ -30,6 +30,7 @@ import static com.poolbets.application.additions.Utils.setPixmapColor;
  */
 public class NavigationDrawer extends Table {
 
+    private Stage stage;
     private Pixmap backgroundPixmap;
     private TextureRegionDrawable backgroundTexture;
     private Table menuTable;
@@ -79,6 +80,8 @@ public class NavigationDrawer extends Table {
     }
 
     public GestureDetector addGestureDetector(final Stage stage) {
+
+        this.stage = stage;
 
         return new GestureDetector(new GestureDetector.GestureListener() {
                     @Override
@@ -153,6 +156,14 @@ public class NavigationDrawer extends Table {
         for (ImageTextButton i : buttons)
             i.align(Align.left).padLeft(50);
 
+        buttons.get(0).addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!flag[0])
+                    flag[1] = true;
+            }
+        });
+
         buttons.get(3).addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -178,12 +189,12 @@ public class NavigationDrawer extends Table {
         menuTable.add(client).width(width).height(height * 3 / 10f).expand().row();
         menuTable.add(buttons.get(0)).width(width - 30).height(height / 8f).
                 center().row();
-        menuTable.add(buttons.get(1)).width(width - 30).height(height / 8f).
-                center().row();
-        menuTable.add(collision).width(width).height(height / 8f).
+//        menuTable.add(buttons.get(1)).width(width - 30).height(height / 8f).
+//                center().row();
+        menuTable.add(collision).width(width).height(height * 3 / 8f).
                 center().expand().row();
-        menuTable.add(buttons.get(2)).width(width - 30).height(height / 8f).
-                center().row();
+//        menuTable.add(buttons.get(2)).width(width - 30).height(height / 8f).
+//                center().row();
         menuTable.add(buttons.get(3)).width(width - 30).height(height / 8f).
                 center().row();
         menuTable.add(copyright).width(width - 30).height(height / 20f).

@@ -60,6 +60,8 @@ public class AuthorizationScreen implements Screen {
     private Brand brand;
     private User user;
 
+    private boolean isNext[] = {true, true};
+
     public AuthorizationScreen(final PoolBetsApp app) {
 
         this.app = app;
@@ -135,25 +137,69 @@ public class AuthorizationScreen implements Screen {
 
     private void createScreen() {
 
+        final Label messageLabel = new Label("",
+                new Label.LabelStyle(font, Color.valueOf("#cc4b4b")));
+        messageLabel.setAlignment(Align.center);
+
         final TextField loginField = new TextField("", fieldStyle);
         loginField.setAlignment(Align.center);
         if (user != null) loginField.setText(user.getLogin());
+        loginField.setMaxLength(15);
+        loginField.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!loginField.getText().matches("^[a-zA-Z0-9]+$")) {
+                    if (isNext[1])
+                        messageLabel.setText("Login doesn't match the requirements");
+                    else
+                        messageLabel.setText("Login and password don't match the requirements");
+
+                    isNext[0] = false;
+                } else {
+                    if (isNext[1])
+                        messageLabel.setText("");
+                    else
+                        messageLabel.setText("Password doesn't match the requirements");
+
+                    isNext[0] = true;
+                }
+            }
+        });
 
         final TextField passwordField = new TextField("", fieldStyle);
         passwordField.setAlignment(Align.center);
         passwordField.setPasswordMode(true);
         passwordField.setPasswordCharacter('*');
         if (user != null) passwordField.setText(user.getPassword());
+        passwordField.setMaxLength(15);
+        passwordField.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!passwordField.getText().matches("^[a-zA-Z0-9]+$")) {
+                    if (isNext[0])
+                        messageLabel.setText("Password doesn't match the requirements");
+                    else
+                        messageLabel.setText("Login and password don't match the requirements");
+
+                    isNext[1] = false;
+                } else {
+                    if (isNext[0])
+                        messageLabel.setText("");
+                    else
+                        messageLabel.setText("Login doesn't match the requirements");
+
+                    isNext[1] = true;
+                }
+            }
+        });
 
         Label loginLabel = new Label("Login",
                 new Label.LabelStyle(font, Color.valueOf("#fbfbf9")));
         loginLabel.setAlignment(Align.center);
-        loginField.setMaxLength(20);
 
         Label passwordLabel = new Label("Password",
                 new Label.LabelStyle(font, Color.valueOf("#fbfbf9")));
         passwordLabel.setAlignment(Align.center);
-        passwordField.setMaxLength(20);
 
         loginField.addListener(new InputListener() {
             @Override
@@ -175,10 +221,6 @@ public class AuthorizationScreen implements Screen {
         checkBox.getImageCell().padRight(25);
         if (user.isExist()) checkBox.setChecked(true);
 
-        final Label messageLabel = new Label("",
-                new Label.LabelStyle(font, Color.valueOf("#cc4b4b")));
-        messageLabel.setAlignment(Align.center);
-
         ImageTextButton signInButton = new ImageTextButton("Sign In", buttonStyle.style);
         signInButton.addListener(new ChangeListener() {
             @Override
@@ -187,36 +229,38 @@ public class AuthorizationScreen implements Screen {
                 Gdx.input.setOnscreenKeyboardVisible(false);
                 menuTable.addAction(moveTo(0, 0, 0.2f));
 
-                messageLabel.setText("");
+                if (isNext[0] && isNext[1]) {
+                    messageLabel.setText("");
 
-                app.setClient(new Client(loginField.getText(), passwordField.getText(),
-                        CODE_AUTHORIZATION));
-                if (app.getClient().getCode().equals(CODE_CONNECTED)) {
+                    app.setClient(new Client(loginField.getText(), passwordField.getText(),
+                            CODE_AUTHORIZATION));
+                    if (app.getClient().getCode().equals(CODE_CONNECTED)) {
 
-                    user.setLogin(loginField.getText());
-                    user.setPassword(passwordField.getText());
+                        user.setLogin(loginField.getText());
+                        user.setPassword(passwordField.getText());
 
-                    if (!checkBox.isChecked())
-                        user.deleteData();
-                    else
-                        user.saveData();
+                        if (!checkBox.isChecked())
+                            user.deleteData();
+                        else
+                            user.saveData();
 
-                    dispose();
-                    app.setScreen(new BetsMenuScreen(app));
-                } else if (app.getClient().getCode().equals(CODE_ERROR_AUTHORIZATION)) {
-                    messageLabel.setText("Wrong login or password");
-                    messageLabel.getColor().a = 0f;
-                    messageLabel.addAction(fadeIn(1f));
+                        dispose();
+                        app.setScreen(new BaseScreen(app));
+                    } else if (app.getClient().getCode().equals(CODE_ERROR_AUTHORIZATION)) {
+                        messageLabel.setText("Wrong login or password");
+                        messageLabel.getColor().a = 0f;
+                        messageLabel.addAction(fadeIn(1f));
 
-                    loginField.getColor().a = 0f;
-                    loginField.addAction(alpha(1, 0.5f));
+                        loginField.getColor().a = 0f;
+                        loginField.addAction(alpha(1, 0.5f));
 
-                    passwordField.getColor().a = 0f;
-                    passwordField.addAction(alpha(1, 0.5f));
-                } else if (app.getClient().getCode().equals(CODE_ERROR_CONNECTION)) {
-                    messageLabel.setText("Not connection with server");
-                    messageLabel.getColor().a = 0f;
-                    messageLabel.addAction(fadeIn(1f));
+                        passwordField.getColor().a = 0f;
+                        passwordField.addAction(alpha(1, 0.5f));
+                    } else if (app.getClient().getCode().equals(CODE_ERROR_CONNECTION)) {
+                        messageLabel.setText("Not connection with server");
+                        messageLabel.getColor().a = 0f;
+                        messageLabel.addAction(fadeIn(1f));
+                    }
                 }
             }
         });
@@ -229,36 +273,54 @@ public class AuthorizationScreen implements Screen {
                 Gdx.input.setOnscreenKeyboardVisible(false);
                 menuTable.addAction(moveTo(0, 0, 0.2f));
 
-                messageLabel.setText("");
+                if (isNext[0] && isNext[1]) {
+                    if (!((loginField.getText().length() < 4) &&
+                            (passwordField.getText().length() < 4))) {
+                        if (loginField.getText().length() < 4) {
+                            messageLabel.setText("Length of login must be more than 3");
+                            return;
+                        }
 
-                app.setClient(new Client(loginField.getText(), passwordField.getText(),
-                        CODE_REGISTRATION));
-                if (app.getClient().getCode().equals(CODE_CONNECTED)) {
+                        if (passwordField.getText().length() < 4) {
+                            messageLabel.setText("Length of password must be more than 3");
+                            return;
+                        }
+                    } else {
+                        messageLabel.setText("Lengths of login and password must be more than 3");
+                        return;
+                    }
 
-                    user.setLogin(loginField.getText());
-                    user.setPassword(passwordField.getText());
+                    messageLabel.setText("");
 
-                    if (!checkBox.isChecked())
-                        user.deleteData();
-                    else
-                        user.saveData();
+                    app.setClient(new Client(loginField.getText(), passwordField.getText(),
+                            CODE_REGISTRATION));
+                    if (app.getClient().getCode().equals(CODE_CONNECTED)) {
 
-                    dispose();
-                    app.setScreen(new BetsMenuScreen(app));
-                } else if (app.getClient().getCode().equals(CODE_ERROR_REGISTRATION)) {
-                    messageLabel.setText("This login has already been taken");
-                    messageLabel.getColor().a = 0;
-                    messageLabel.addAction(fadeIn(1f));
+                        user.setLogin(loginField.getText());
+                        user.setPassword(passwordField.getText());
 
-                    loginField.getColor().a = 0f;
-                    loginField.addAction(alpha(1, 0.5f));
+                        if (!checkBox.isChecked())
+                            user.deleteData();
+                        else
+                            user.saveData();
 
-                    passwordField.getColor().a = 0f;
-                    passwordField.addAction(alpha(1, 0.5f));
-                } else if (app.getClient().getCode().equals(CODE_ERROR_CONNECTION)) {
-                    messageLabel.setText("Not connection with server");
-                    messageLabel.getColor().a = 0;
-                    messageLabel.addAction(fadeIn(1f));
+                        dispose();
+                        app.setScreen(new BaseScreen(app));
+                    } else if (app.getClient().getCode().equals(CODE_ERROR_REGISTRATION)) {
+                        messageLabel.setText("This login has already been taken");
+                        messageLabel.getColor().a = 0;
+                        messageLabel.addAction(fadeIn(1f));
+
+                        loginField.getColor().a = 0f;
+                        loginField.addAction(alpha(1, 0.5f));
+
+                        passwordField.getColor().a = 0f;
+                        passwordField.addAction(alpha(1, 0.5f));
+                    } else if (app.getClient().getCode().equals(CODE_ERROR_CONNECTION)) {
+                        messageLabel.setText("Not connection with server");
+                        messageLabel.getColor().a = 0;
+                        messageLabel.addAction(fadeIn(1f));
+                    }
                 }
             }
         });

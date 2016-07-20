@@ -24,6 +24,10 @@ public class Client extends Thread {
     String password;
     private String cash;
     private String code;
+    private ArrayList<String> seasons;
+    private ArrayList<String> leagues;
+    private ArrayList<Pair<Integer, String>> teams;
+    private ArrayList<Bet> events;
 
     public Client(String login, String password, String Code) {
 
@@ -31,6 +35,10 @@ public class Client extends Thread {
         this.password = password;
 
         connect(Code);
+        setSeasons();
+        setLeagues();
+        setTeams();
+        setEvents();
     }
 
     public String getID() {
@@ -49,6 +57,22 @@ public class Client extends Thread {
         return code;
     }
 
+    public ArrayList<String> getSeasons() {
+        return seasons;
+    }
+
+    public ArrayList<String> getLeagues() {
+        return leagues;
+    }
+
+    public ArrayList<Pair<Integer, String>> getTeams() {
+        return teams;
+    }
+
+    public ArrayList<Bet> getEvents() {
+        return events;
+    }
+
     public void connect(String Code) {
 
         try {
@@ -62,6 +86,27 @@ public class Client extends Thread {
             out.writeUTF(CODE_LOGIN + this.login + "|" +
                     CODE_PASSWORD + this.password + "|" +
                     Code + "|");
+            out.flush();
+
+            String line = in.readUTF();
+            analise(line);
+        } catch (Throwable throwable) {
+            code = CODE_ERROR_CONNECTION;
+        }
+    }
+
+    public void restartConnection() {
+
+        try {
+            InetAddress inetAddress = InetAddress.getByName(this.ipAddress);
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(inetAddress, this.port), 5000);
+
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+
+            out.writeUTF(CODE_ID + this.id + "|" +
+                    CODE_AUTHORIZATION + "|");
             out.flush();
 
             String line = in.readUTF();
@@ -97,20 +142,25 @@ public class Client extends Thread {
 
         for (Pair<String, String> message : messages) {
 
-            if (message.getCode().equals(CODE_CONNECTED) ||
-                    message.getCode().equals(CODE_ERROR_REGISTRATION) ||
-                    message.getCode().equals(CODE_ERROR_AUTHORIZATION))
-                code = message.getCode();
-            else if (message.getCode().equals(CODE_ID))
-                id = message.getValue();
-            else if (message.getCode().equals(CODE_CASH))
-                cash = message.getValue();
+            switch (message.getCode()) {
+                case CODE_CONNECTED:
+                case CODE_ERROR_REGISTRATION:
+                case CODE_ERROR_AUTHORIZATION:
+                    code = message.getCode();
+                    break;
+                case CODE_ID:
+                    id = message.getValue();
+                    break;
+                case CODE_CASH:
+                    cash = message.getValue();
+                    break;
+            }
         }
     }
 
     private ArrayList<Pair<String, String>> decoder(String inputLine) {
 
-        ArrayList<Pair<String, String>> messages = new ArrayList<Pair<String, String>>();
+        ArrayList<Pair<String, String>> messages = new ArrayList<>();
 
         int j = 0;
 
@@ -118,11 +168,141 @@ public class Client extends Thread {
 
             if (inputLine.charAt(i) != '|') continue;
 
-            messages.add(new Pair<String, String>(inputLine.substring(j, j + 3),
+            messages.add(new Pair<>(inputLine.substring(j, j + 3),
                     ((inputLine.length() >= i + 1) ? inputLine.substring(j + 3, i) : "")));
             j = i + 1;
         }
 
         return messages;
+    }
+
+    public void setSeasons() {
+
+        try {
+            InetAddress inetAddress = InetAddress.getByName(this.ipAddress);
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(inetAddress, this.port), 5000);
+
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+
+            seasons = new ArrayList<>();
+
+            out.writeUTF(CODE_ID + this.id + "|" +
+                    SQL_GET_SEASONS + "|");
+            out.flush();
+
+            int count = in.readInt();
+
+            for (int i = 0; i < count; i++)
+                seasons.add(in.readUTF());
+        } catch (Throwable throwable) {
+            this.code = CODE_ERROR_CONNECTION;
+        }
+    }
+
+    public void setLeagues() {
+
+        try {
+            InetAddress inetAddress = InetAddress.getByName(this.ipAddress);
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(inetAddress, this.port), 5000);
+
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+
+            leagues = new ArrayList<>();
+
+            out.writeUTF(CODE_ID + this.id + "|" +
+                    SQL_GET_LEAGUES + "|");
+            out.flush();
+
+            int count = in.readInt();
+
+            for (int i = 0; i < count; i++)
+                leagues.add(in.readUTF());
+        } catch (Throwable throwable) {
+            this.code = CODE_ERROR_CONNECTION;
+        }
+    }
+
+    public void setTeams() {
+
+        try {
+            InetAddress inetAddress = InetAddress.getByName(this.ipAddress);
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(inetAddress, this.port), 5000);
+
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+
+            teams = new ArrayList<>();
+
+            out.writeUTF(CODE_ID + this.id + "|" +
+                    SQL_GET_TEAMS + "|");
+            out.flush();
+
+            int count = in.readInt();
+
+            for (int i = 0; i < count; i++) {
+
+                int leagueID = Integer.parseInt(in.readUTF());
+                String team = in.readUTF();
+
+                teams.add(new Pair<>(leagueID, team));
+            }
+        } catch (Throwable throwable) {
+            this.code = CODE_ERROR_CONNECTION;
+        }
+    }
+
+    public void setEvents() {
+
+        try {
+            InetAddress inetAddress = InetAddress.getByName(this.ipAddress);
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(inetAddress, this.port), 5000);
+
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+
+            events = new ArrayList<>();
+
+            out.writeUTF(CODE_ID + this.id + "|" +
+                    SQL_GET_EVENTS + "|");
+            out.flush();
+
+            int count = in.readInt();
+
+            for (int i = 0; i < count; i++) {
+
+                String league = in.readUTF();
+                String season = in.readUTF();
+                String firstTeam = in.readUTF();
+                String secondTeam = in.readUTF();
+                String winFirstTeam = in.readUTF();
+                String draw = in.readUTF();
+                String winSecondTeam = in.readUTF();
+                String result = in.readUTF();
+
+                int leagueID = Integer.parseInt(league);
+                int seasonID = Integer.parseInt(season);
+                int firstTeamID = Integer.parseInt(firstTeam);
+                int secondTeamID = Integer.parseInt(secondTeam);
+
+                events.add(new Bet(
+                        leagues.get(leagueID - 1),
+                        seasons.get(seasonID - 1),
+                        teams.get(firstTeamID - 1).getValue(),
+                        teams.get(secondTeamID - 1).getValue(),
+                        winFirstTeam,
+                        draw,
+                        winSecondTeam,
+                        result
+                ));
+            }
+        } catch (Throwable throwable) {
+            this.code = CODE_ERROR_CONNECTION;
+        }
     }
 }

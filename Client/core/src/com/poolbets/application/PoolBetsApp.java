@@ -97,14 +97,15 @@ public class PoolBetsApp extends Game {
 		super.dispose();
 		manager.dispose();
 
-		if (client.getCode().equals(CODE_CONNECTED)) {
-			Thread thread = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					client.disconnect();
-				}
-			});
-			thread.start();
-		}
+		if (client != null)
+			if (client.getCode().equals(CODE_CONNECTED)) {
+				Thread thread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						client.disconnect();
+					}
+				});
+				thread.start();
+			}
 	}
 }

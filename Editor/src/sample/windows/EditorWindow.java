@@ -25,24 +25,53 @@ import static sample.additions.Utils.*;
  */
 class EditorWindow {
 
-    private ArrayList<String> leagues = initLeague();
-    private ArrayList<String> seasons = initSeason();
-    private ArrayList<String> EPL = initEPL();
-    private ArrayList<String> SLL = initSLL();
-    private ArrayList<String> ISA = initISA();
-    private ArrayList<String> FL1 = initFL1();
-    private ArrayList<String> GB1 = initGB1();
-    private ArrayList<String> RPL = initRPL();
+    private ArrayList<String> leagues;
+    private ArrayList<String> seasons;
+    private ArrayList<String> EPL;
+    private ArrayList<String> SLL;
+    private ArrayList<String> ISA;
+    private ArrayList<String> FL1;
+    private ArrayList<String> GB1;
+    private ArrayList<String> RPL;
+    private ArrayList<String> l;
 
     private MainWindow mainWindow;
     private Bet bet;
+    private int index;
 
     private Label errorLabel;
 
-    EditorWindow(MainWindow mainWindow, Bet bet) {
+    EditorWindow(MainWindow mainWindow, Bet bet, int index) {
 
         this.mainWindow = mainWindow;
         this.bet = bet;
+        this.index = index;
+
+        System.out.println(index);
+
+        leagues = mainWindow.getClient().getLeagues();
+        seasons = mainWindow.getClient().getSeasons();
+        EPL = initEPL(mainWindow.getClient().getTeams());
+        SLL = initSLL(mainWindow.getClient().getTeams());
+        ISA = initISA(mainWindow.getClient().getTeams());
+        FL1 = initFL1(mainWindow.getClient().getTeams());
+        GB1 = initGB1(mainWindow.getClient().getTeams());
+        RPL = initRPL(mainWindow.getClient().getTeams());
+
+        if (bet != null) {
+            if (bet.getLeague().equals(leagues.get(0)))
+                l = EPL;
+            if (bet.getLeague().equals(leagues.get(1)))
+                l = SLL;
+            if (bet.getLeague().equals(leagues.get(2)))
+                l = ISA;
+            if (bet.getLeague().equals(leagues.get(3)))
+                l = FL1;
+            if (bet.getLeague().equals(leagues.get(4)))
+                l = GB1;
+            if (bet.getLeague().equals(leagues.get(5)))
+                l = RPL;
+        }
 
         Stage stage = new Stage();
         if (bet == null) stage.setTitle("Bet Editor - Adding");
@@ -52,6 +81,7 @@ class EditorWindow {
         VBox root = createMatchInfo(stage, bet);
 
         stage.setScene(new Scene(root, 800, 600));
+        stage.setResizable(false);
         stage.show();
     }
 
@@ -87,7 +117,10 @@ class EditorWindow {
         Label firstTeamLabel = new Label("Team 1:");
 
         ComboBox<String> firstTeamCB = new ComboBox<>();
-        firstTeamCB.setItems(FXCollections.observableArrayList(EPL));
+        if (bet != null)
+            firstTeamCB.setItems(FXCollections.observableArrayList(l));
+        else
+            firstTeamCB.setItems(FXCollections.observableArrayList(EPL));
         firstTeamCB.setPrefWidth(200);
 
         if (bet == null) firstTeamCB.getSelectionModel().select(0);
@@ -96,7 +129,10 @@ class EditorWindow {
         Label secondTeamLabel = new Label("Team 2:");
 
         ComboBox<String> secondTeamCB = new ComboBox<>();
-        secondTeamCB.setItems(FXCollections.observableArrayList(EPL));
+        if (bet != null)
+            secondTeamCB.setItems(FXCollections.observableArrayList(l));
+        else
+            secondTeamCB.setItems(FXCollections.observableArrayList(EPL));
         secondTeamCB.setPrefWidth(200);
 
         if (bet == null) secondTeamCB.getSelectionModel().select(1);
@@ -373,6 +409,7 @@ class EditorWindow {
             bet.setDraw((100d / Double.parseDouble(drawField.getText())) + "");
             bet.setWinSecondTeam((100d / Double.parseDouble(winSecondTeamField.getText())) + "");
             bet.setResult(reasonCB.getValue());
+            mainWindow.updateBetOnMySQLServer(bet, index);
         } else {
             if (!mainWindow.check(leagueCB.getValue(), seasonCB.getValue(),
                     firstTeamCB.getValue(), secondTeamCB.getValue()))

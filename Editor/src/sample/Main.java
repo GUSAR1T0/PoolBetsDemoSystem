@@ -15,6 +15,7 @@ public class Main extends Application {
         VBox root = mainWindow.getRoot();
         primaryStage.setTitle("PoolBets Database Editor");
         primaryStage.setScene(new Scene(root, 800, 600));
+        primaryStage.setResizable(false);
         primaryStage.show();
 
         primaryStage.setOnCloseRequest(event -> {

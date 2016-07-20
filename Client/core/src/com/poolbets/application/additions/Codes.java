@@ -18,4 +18,10 @@ public class Codes {
     public static final String CODE_CONNECTED = "200";
     public static final String CODE_DISCONNECTED = "201";
     public static final String CODE_ERROR_CONNECTION = "250";
+
+    public static final String SQL_GET_SEASONS = "400";
+    public static final String SQL_GET_LEAGUES = "401";
+    public static final String SQL_GET_TEAMS = "402";
+    public static final String SQL_GET_BETS_HISTORY = "403";
+    public static final String SQL_GET_EVENTS = "404";
 }
